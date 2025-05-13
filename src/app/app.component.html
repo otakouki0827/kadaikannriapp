@@ -1,335 +1,2420 @@
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content below * * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * Delete the template below * * * * * * * * * -->
-<!-- * * * * * * * to get started with your project! * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<div *ngIf="!isAuthReady" class="auth-loading"></div>
+<main class="main" *ngIf="isAuthReady && currentUser">
+  <div class="app-container">
+    <header class="app-header">
+      <div style="display: flex; align-items: center;">
+        <div class="view-toggle">
+          <button class="view-button" [class.active]="currentView === 'list'" (click)="switchView('list')">
+            <i>📋</i> リスト表示
+          </button>
+          <button class="view-button" [class.active]="currentView === 'gantt'" (click)="switchView('gantt')">
+            <i>📊</i> ガントチャート
+          </button>
+          <button class="view-button" [class.active]="currentView === 'board'" (click)="switchView('board')">
+            <i>📌</i> ボード表示
+          </button>
+          <button class="view-button" [class.active]="currentView === 'burnup'" (click)="switchView('burnup')">
+            <i>📉</i> バーンアップ
+          </button>
+          <button class="view-button" [class.active]="currentView === 'search'" (click)="switchView('search')">
+            <i>🔍</i> 検索
+          </button>
+          <button class="view-button" [class.active]="currentView === 'bigProject'" (click)="switchView('bigProject')">
+            <i>🏢</i> ビッグプロジェクト
+          </button>
+        </div>
+        <div class="account-section">
+          <div *ngIf="!currentUser" class="auth-buttons">
+            <button class="auth-button" (click)="showLogin()">
+              <i>🔑</i> ログイン
+            </button>
+            <button class="auth-button" (click)="showRegister()">
+              <i>📝</i> 新規登録
+            </button>
+          </div>
+          <div *ngIf="currentUser" class="user-menu-simple">
+            <span class="user-email">{{ currentUser.email }}</span>
+            <button class="logout-button" (click)="logout()">ログアウト</button>
+          </div>
+        </div>
+      </div>
+    </header>
 
-<style>
-  :host {
-    --bright-blue: oklch(51.01% 0.274 263.83);
-    --electric-violet: oklch(53.18% 0.28 296.97);
-    --french-violet: oklch(47.66% 0.246 305.88);
-    --vivid-pink: oklch(69.02% 0.277 332.77);
-    --hot-red: oklch(61.42% 0.238 15.34);
-    --orange-red: oklch(63.32% 0.24 31.68);
-
-    --gray-900: oklch(19.37% 0.006 300.98);
-    --gray-700: oklch(36.98% 0.014 302.71);
-    --gray-400: oklch(70.9% 0.015 304.04);
-
-    --red-to-pink-to-purple-vertical-gradient: linear-gradient(
-      180deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --red-to-pink-to-purple-horizontal-gradient: linear-gradient(
-      90deg,
-      var(--orange-red) 0%,
-      var(--vivid-pink) 50%,
-      var(--electric-violet) 100%
-    );
-
-    --pill-accent: var(--bright-blue);
-
-    font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-
-  h1 {
-    font-size: 3.125rem;
-    color: var(--gray-900);
-    font-weight: 500;
-    line-height: 100%;
-    letter-spacing: -0.125rem;
-    margin: 0;
-    font-family: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-      Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-      "Segoe UI Symbol";
-  }
-
-  p {
-    margin: 0;
-    color: var(--gray-700);
-  }
-
-  main {
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    box-sizing: inherit;
-    position: relative;
-  }
-
-  .angular-logo {
-    max-width: 9.2rem;
-  }
-
-  .content {
-    display: flex;
-    justify-content: space-around;
-    width: 100%;
-    max-width: 700px;
-    margin-bottom: 3rem;
-  }
-
-  .content h1 {
-    margin-top: 1.75rem;
-  }
-
-  .content p {
-    margin-top: 1.5rem;
-  }
-
-  .divider {
-    width: 1px;
-    background: var(--red-to-pink-to-purple-vertical-gradient);
-    margin-inline: 0.5rem;
-  }
-
-  .pill-group {
-    display: flex;
-    flex-direction: column;
-    align-items: start;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-  }
-
-  .pill {
-    display: flex;
-    align-items: center;
-    --pill-accent: var(--bright-blue);
-    background: color-mix(in srgb, var(--pill-accent) 5%, transparent);
-    color: var(--pill-accent);
-    padding-inline: 0.75rem;
-    padding-block: 0.375rem;
-    border-radius: 2.75rem;
-    border: 0;
-    transition: background 0.3s ease;
-    font-family: var(--inter-font);
-    font-size: 0.875rem;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 1.4rem;
-    letter-spacing: -0.00875rem;
-    text-decoration: none;
-  }
-
-  .pill:hover {
-    background: color-mix(in srgb, var(--pill-accent) 15%, transparent);
-  }
-
-  .pill-group .pill:nth-child(6n + 1) {
-    --pill-accent: var(--bright-blue);
-  }
-  .pill-group .pill:nth-child(6n + 2) {
-    --pill-accent: var(--french-violet);
-  }
-  .pill-group .pill:nth-child(6n + 3),
-  .pill-group .pill:nth-child(6n + 4),
-  .pill-group .pill:nth-child(6n + 5) {
-    --pill-accent: var(--hot-red);
-  }
-
-  .pill-group svg {
-    margin-inline-start: 0.25rem;
-  }
-
-  .social-links {
-    display: flex;
-    align-items: center;
-    gap: 0.73rem;
-    margin-top: 1.5rem;
-  }
-
-  .social-links path {
-    transition: fill 0.3s ease;
-    fill: var(--gray-400);
-  }
-
-  .social-links a:hover svg path {
-    fill: var(--gray-900);
-  }
-
-  @media screen and (max-width: 650px) {
-    .content {
-      flex-direction: column;
-      width: max-content;
-    }
-
-    .divider {
-      height: 1px;
-      width: 100%;
-      background: var(--red-to-pink-to-purple-horizontal-gradient);
-      margin-block: 1.5rem;
-    }
-  }
-</style>
-
-<main class="main">
-  <div class="content">
-    <div class="left-side">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 982 239"
-        fill="none"
-        class="angular-logo"
-      >
-        <g clip-path="url(#a)">
-          <path
-            fill="url(#b)"
-            d="M388.676 191.625h30.849L363.31 31.828h-35.758l-56.215 159.797h30.848l13.174-39.356h60.061l13.256 39.356Zm-65.461-62.675 21.602-64.311h1.227l21.602 64.311h-44.431Zm126.831-7.527v70.202h-28.23V71.839h27.002v20.374h1.392c2.782-6.71 7.2-12.028 13.255-15.956 6.056-3.927 13.584-5.89 22.503-5.89 8.264 0 15.465 1.8 21.684 5.318 6.137 3.518 10.964 8.673 14.319 15.382 3.437 6.71 5.074 14.81 4.992 24.383v76.175h-28.23v-71.92c0-8.019-2.046-14.237-6.219-18.819-4.173-4.5-9.819-6.791-17.102-6.791-4.91 0-9.328 1.063-13.174 3.272-3.846 2.128-6.792 5.237-9.001 9.328-2.046 4.009-3.191 8.918-3.191 14.728ZM589.233 239c-10.147 0-18.82-1.391-26.103-4.091-7.282-2.7-13.092-6.382-17.511-10.964-4.418-4.582-7.528-9.655-9.164-15.219l25.448-6.136c1.145 2.372 2.782 4.663 4.991 6.954 2.209 2.291 5.155 4.255 8.837 5.81 3.683 1.554 8.428 2.291 14.074 2.291 8.019 0 14.647-1.964 19.884-5.81 5.237-3.845 7.856-10.227 7.856-19.064v-22.665h-1.391c-1.473 2.946-3.601 5.892-6.383 9.001-2.782 3.109-6.464 5.645-10.965 7.691-4.582 2.046-10.228 3.109-17.101 3.109-9.165 0-17.511-2.209-25.039-6.545-7.446-4.337-13.42-10.883-17.757-19.474-4.418-8.673-6.628-19.473-6.628-32.565 0-13.091 2.21-24.301 6.628-33.383 4.419-9.082 10.311-15.955 17.839-20.7 7.528-4.746 15.874-7.037 25.039-7.037 7.037 0 12.846 1.145 17.347 3.518 4.582 2.373 8.182 5.236 10.883 8.51 2.7 3.272 4.746 6.382 6.137 9.327h1.554v-19.8h27.821v121.749c0 10.228-2.454 18.737-7.364 25.447-4.91 6.709-11.538 11.7-20.048 15.055-8.509 3.355-18.165 4.991-28.884 4.991Zm.245-71.266c5.974 0 11.047-1.473 15.302-4.337 4.173-2.945 7.446-7.118 9.573-12.519 2.21-5.482 3.274-12.027 3.274-19.637 0-7.609-1.064-14.155-3.274-19.8-2.127-5.646-5.318-10.064-9.491-13.255-4.174-3.11-9.329-4.746-15.384-4.746s-11.537 1.636-15.792 4.91c-4.173 3.272-7.365 7.772-9.492 13.418-2.128 5.727-3.191 12.191-3.191 19.392 0 7.2 1.063 13.745 3.273 19.228 2.127 5.482 5.318 9.736 9.573 12.764 4.174 3.027 9.41 4.582 15.629 4.582Zm141.56-26.51V71.839h28.23v119.786h-27.412v-21.273h-1.227c-2.7 6.709-7.119 12.191-13.338 16.446-6.137 4.255-13.747 6.382-22.748 6.382-7.855 0-14.81-1.718-20.783-5.237-5.974-3.518-10.72-8.591-14.075-15.382-3.355-6.709-5.073-14.891-5.073-24.464V71.839h28.312v71.921c0 7.609 2.046 13.664 6.219 18.083 4.173 4.5 9.655 6.709 16.365 6.709 4.173 0 8.183-.982 12.111-3.028 3.927-2.045 7.118-5.072 9.655-9.082 2.537-4.091 3.764-9.164 3.764-15.218Zm65.707-109.395v159.796h-28.23V31.828h28.23Zm44.841 162.169c-7.61 0-14.402-1.391-20.457-4.091-6.055-2.7-10.883-6.791-14.32-12.109-3.518-5.319-5.237-11.946-5.237-19.801 0-6.791 1.228-12.355 3.765-16.773 2.536-4.419 5.891-7.937 10.228-10.637 4.337-2.618 9.164-4.664 14.647-6.055 5.4-1.391 11.046-2.373 16.856-3.027 7.037-.737 12.683-1.391 17.102-1.964 4.337-.573 7.528-1.555 9.574-2.782 1.963-1.309 3.027-3.273 3.027-5.973v-.491c0-5.891-1.718-10.391-5.237-13.664-3.518-3.191-8.51-4.828-15.056-4.828-6.955 0-12.356 1.473-16.447 4.5-4.009 3.028-6.71 6.546-8.183 10.719l-26.348-3.764c2.046-7.282 5.483-13.336 10.31-18.328 4.746-4.909 10.638-8.59 17.511-11.045 6.955-2.455 14.565-3.682 22.912-3.682 5.809 0 11.537.654 17.265 2.045s10.965 3.6 15.711 6.71c4.746 3.109 8.51 7.282 11.455 12.6 2.864 5.318 4.337 11.946 4.337 19.883v80.184h-27.166v-16.446h-.9c-1.719 3.355-4.092 6.464-7.201 9.328-3.109 2.864-6.955 5.237-11.619 6.955-4.828 1.718-10.229 2.536-16.529 2.536Zm7.364-20.701c5.646 0 10.556-1.145 14.729-3.354 4.173-2.291 7.364-5.237 9.655-9.001 2.292-3.763 3.355-7.854 3.355-12.273v-14.155c-.9.737-2.373 1.391-4.5 2.046-2.128.654-4.419 1.145-7.037 1.636-2.619.491-5.155.9-7.692 1.227-2.537.328-4.746.655-6.628.901-4.173.572-8.019 1.472-11.292 2.781-3.355 1.31-5.973 3.11-7.855 5.401-1.964 2.291-2.864 5.318-2.864 8.918 0 5.237 1.882 9.164 5.728 11.782 3.682 2.782 8.51 4.091 14.401 4.091Zm64.643 18.328V71.839h27.412v19.965h1.227c2.21-6.955 5.974-12.274 11.292-16.038 5.319-3.763 11.456-5.645 18.329-5.645 1.555 0 3.355.082 5.237.163 1.964.164 3.601.328 4.91.573v25.938c-1.227-.41-3.109-.819-5.646-1.146a58.814 58.814 0 0 0-7.446-.49c-5.155 0-9.738 1.145-13.829 3.354-4.091 2.209-7.282 5.236-9.655 9.164-2.373 3.927-3.519 8.427-3.519 13.5v70.448h-28.312ZM222.077 39.192l-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"
-          />
-          <path
-            fill="url(#c)"
-            d="M388.676 191.625h30.849L363.31 31.828h-35.758l-56.215 159.797h30.848l13.174-39.356h60.061l13.256 39.356Zm-65.461-62.675 21.602-64.311h1.227l21.602 64.311h-44.431Zm126.831-7.527v70.202h-28.23V71.839h27.002v20.374h1.392c2.782-6.71 7.2-12.028 13.255-15.956 6.056-3.927 13.584-5.89 22.503-5.89 8.264 0 15.465 1.8 21.684 5.318 6.137 3.518 10.964 8.673 14.319 15.382 3.437 6.71 5.074 14.81 4.992 24.383v76.175h-28.23v-71.92c0-8.019-2.046-14.237-6.219-18.819-4.173-4.5-9.819-6.791-17.102-6.791-4.91 0-9.328 1.063-13.174 3.272-3.846 2.128-6.792 5.237-9.001 9.328-2.046 4.009-3.191 8.918-3.191 14.728ZM589.233 239c-10.147 0-18.82-1.391-26.103-4.091-7.282-2.7-13.092-6.382-17.511-10.964-4.418-4.582-7.528-9.655-9.164-15.219l25.448-6.136c1.145 2.372 2.782 4.663 4.991 6.954 2.209 2.291 5.155 4.255 8.837 5.81 3.683 1.554 8.428 2.291 14.074 2.291 8.019 0 14.647-1.964 19.884-5.81 5.237-3.845 7.856-10.227 7.856-19.064v-22.665h-1.391c-1.473 2.946-3.601 5.892-6.383 9.001-2.782 3.109-6.464 5.645-10.965 7.691-4.582 2.046-10.228 3.109-17.101 3.109-9.165 0-17.511-2.209-25.039-6.545-7.446-4.337-13.42-10.883-17.757-19.474-4.418-8.673-6.628-19.473-6.628-32.565 0-13.091 2.21-24.301 6.628-33.383 4.419-9.082 10.311-15.955 17.839-20.7 7.528-4.746 15.874-7.037 25.039-7.037 7.037 0 12.846 1.145 17.347 3.518 4.582 2.373 8.182 5.236 10.883 8.51 2.7 3.272 4.746 6.382 6.137 9.327h1.554v-19.8h27.821v121.749c0 10.228-2.454 18.737-7.364 25.447-4.91 6.709-11.538 11.7-20.048 15.055-8.509 3.355-18.165 4.991-28.884 4.991Zm.245-71.266c5.974 0 11.047-1.473 15.302-4.337 4.173-2.945 7.446-7.118 9.573-12.519 2.21-5.482 3.274-12.027 3.274-19.637 0-7.609-1.064-14.155-3.274-19.8-2.127-5.646-5.318-10.064-9.491-13.255-4.174-3.11-9.329-4.746-15.384-4.746s-11.537 1.636-15.792 4.91c-4.173 3.272-7.365 7.772-9.492 13.418-2.128 5.727-3.191 12.191-3.191 19.392 0 7.2 1.063 13.745 3.273 19.228 2.127 5.482 5.318 9.736 9.573 12.764 4.174 3.027 9.41 4.582 15.629 4.582Zm141.56-26.51V71.839h28.23v119.786h-27.412v-21.273h-1.227c-2.7 6.709-7.119 12.191-13.338 16.446-6.137 4.255-13.747 6.382-22.748 6.382-7.855 0-14.81-1.718-20.783-5.237-5.974-3.518-10.72-8.591-14.075-15.382-3.355-6.709-5.073-14.891-5.073-24.464V71.839h28.312v71.921c0 7.609 2.046 13.664 6.219 18.083 4.173 4.5 9.655 6.709 16.365 6.709 4.173 0 8.183-.982 12.111-3.028 3.927-2.045 7.118-5.072 9.655-9.082 2.537-4.091 3.764-9.164 3.764-15.218Zm65.707-109.395v159.796h-28.23V31.828h28.23Zm44.841 162.169c-7.61 0-14.402-1.391-20.457-4.091-6.055-2.7-10.883-6.791-14.32-12.109-3.518-5.319-5.237-11.946-5.237-19.801 0-6.791 1.228-12.355 3.765-16.773 2.536-4.419 5.891-7.937 10.228-10.637 4.337-2.618 9.164-4.664 14.647-6.055 5.4-1.391 11.046-2.373 16.856-3.027 7.037-.737 12.683-1.391 17.102-1.964 4.337-.573 7.528-1.555 9.574-2.782 1.963-1.309 3.027-3.273 3.027-5.973v-.491c0-5.891-1.718-10.391-5.237-13.664-3.518-3.191-8.51-4.828-15.056-4.828-6.955 0-12.356 1.473-16.447 4.5-4.009 3.028-6.71 6.546-8.183 10.719l-26.348-3.764c2.046-7.282 5.483-13.336 10.31-18.328 4.746-4.909 10.638-8.59 17.511-11.045 6.955-2.455 14.565-3.682 22.912-3.682 5.809 0 11.537.654 17.265 2.045s10.965 3.6 15.711 6.71c4.746 3.109 8.51 7.282 11.455 12.6 2.864 5.318 4.337 11.946 4.337 19.883v80.184h-27.166v-16.446h-.9c-1.719 3.355-4.092 6.464-7.201 9.328-3.109 2.864-6.955 5.237-11.619 6.955-4.828 1.718-10.229 2.536-16.529 2.536Zm7.364-20.701c5.646 0 10.556-1.145 14.729-3.354 4.173-2.291 7.364-5.237 9.655-9.001 2.292-3.763 3.355-7.854 3.355-12.273v-14.155c-.9.737-2.373 1.391-4.5 2.046-2.128.654-4.419 1.145-7.037 1.636-2.619.491-5.155.9-7.692 1.227-2.537.328-4.746.655-6.628.901-4.173.572-8.019 1.472-11.292 2.781-3.355 1.31-5.973 3.11-7.855 5.401-1.964 2.291-2.864 5.318-2.864 8.918 0 5.237 1.882 9.164 5.728 11.782 3.682 2.782 8.51 4.091 14.401 4.091Zm64.643 18.328V71.839h27.412v19.965h1.227c2.21-6.955 5.974-12.274 11.292-16.038 5.319-3.763 11.456-5.645 18.329-5.645 1.555 0 3.355.082 5.237.163 1.964.164 3.601.328 4.91.573v25.938c-1.227-.41-3.109-.819-5.646-1.146a58.814 58.814 0 0 0-7.446-.49c-5.155 0-9.738 1.145-13.829 3.354-4.091 2.209-7.282 5.236-9.655 9.164-2.373 3.927-3.519 8.427-3.519 13.5v70.448h-28.312ZM222.077 39.192l-8.019 125.923L137.387 0l84.69 39.192Zm-53.105 162.825-57.933 33.056-57.934-33.056 11.783-28.556h92.301l11.783 28.556ZM111.039 62.675l30.357 73.803H80.681l30.358-73.803ZM7.937 165.115 0 39.192 84.69 0 7.937 165.115Z"
-          />
-        </g>
-        <defs>
-          <radialGradient
-            id="c"
-            cx="0"
-            cy="0"
-            r="1"
-            gradientTransform="rotate(118.122 171.182 60.81) scale(205.794)"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stop-color="#FF41F8" />
-            <stop offset=".707" stop-color="#FF41F8" stop-opacity=".5" />
-            <stop offset="1" stop-color="#FF41F8" stop-opacity="0" />
-          </radialGradient>
-          <linearGradient
-            id="b"
-            x1="0"
-            x2="982"
-            y1="192"
-            y2="192"
-            gradientUnits="userSpaceOnUse"
-          >
-            <stop stop-color="#F0060B" />
-            <stop offset="0" stop-color="#F0070C" />
-            <stop offset=".526" stop-color="#CC26D5" />
-            <stop offset="1" stop-color="#7702FF" />
-          </linearGradient>
-          <clipPath id="a"><path fill="#fff" d="M0 0h982v239H0z" /></clipPath>
-        </defs>
-      </svg>
-      <h1>Hello, {{ title }}</h1>
-      <p>Congratulations! Your app is running. 🎉</p>
+    <!-- ログインフォーム -->
+    <div *ngIf="showLoginForm" class="login-modal">
+      <div class="login-box">
+        <button class="close-button" type="button" (click)="showLoginForm = false">×</button>
+        <h2>ログイン</h2>
+        <p class="login-desc">メールアドレスとパスワードを入力してください。</p>
+        <form (ngSubmit)="login()" #loginFormRef="ngForm">
+          <div class="form-group">
+            <label for="email"><i class="material-icons">mail</i> メールアドレス</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              [(ngModel)]="loginForm.email"
+              required
+              autocomplete="username"
+              placeholder="例: user@example.com"
+            />
+          </div>
+          <div class="form-group">
+            <label for="password"><i class="material-icons">lock</i> パスワード</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              [(ngModel)]="loginForm.password"
+              required
+              autocomplete="current-password"
+              placeholder="6文字以上"
+            />
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                name="rememberMe"
+                [(ngModel)]="loginForm.rememberMe"
+              />
+              ログイン状態を保持
+            </label>
+          </div>
+          <div *ngIf="loginError" class="error-message">{{ loginError }}</div>
+          <div class="form-actions">
+            <button class="login-button" type="submit" [disabled]="loginFormRef.invalid">ログイン</button>
+            <button class="link-button" type="button" (click)="showRegister()">新規登録はこちら</button>
+          </div>
+          <hr class="form-divider" />
+          <div class="form-links">
+            <span>パスワードを忘れた場合は管理者にお問い合わせください。</span>
+          </div>
+        </form>
+      </div>
     </div>
-    <div class="divider" role="separator" aria-label="Divider"></div>
-    <div class="right-side">
-      <div class="pill-group">
-        @for (item of [
-          { title: 'Explore the Docs', link: 'https://angular.dev' },
-          { title: 'Learn with Tutorials', link: 'https://angular.dev/tutorials' },
-          { title: 'CLI Docs', link: 'https://angular.dev/tools/cli' },
-          { title: 'Angular Language Service', link: 'https://angular.dev/tools/language-service' },
-          { title: 'Angular DevTools', link: 'https://angular.dev/tools/devtools' },
-        ]; track item.title) {
-          <a
-            class="pill"
-            [href]="item.link"
-            target="_blank"
-            rel="noopener"
-          >
-            <span>{{ item.title }}</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              height="14"
-              viewBox="0 -960 960 960"
-              width="14"
-              fill="currentColor"
-            >
-              <path
-                d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h560v-280h80v280q0 33-23.5 56.5T760-120H200Zm188-212-56-56 372-372H560v-80h280v280h-80v-144L388-332Z"
+
+    <!-- 新規登録フォーム -->
+    <div class="auth-modal" *ngIf="showRegisterForm">
+      <div class="auth-form">
+        <button class="close-button" type="button" (click)="showRegisterForm = false">×</button>
+        <h2>新規アカウント登録</h2>
+        <p class="login-desc">メールアドレスとパスワードを入力してアカウントを作成してください。</p>
+        <form (ngSubmit)="register()" #registerFormRef="ngForm">
+          <div class="form-group">
+            <label for="register-email"><i class="material-icons">mail</i> メールアドレス</label>
+            <input
+              id="register-email"
+              name="email"
+              type="email"
+              [(ngModel)]="registerForm.email"
+              required
+              autocomplete="username"
+              placeholder="例: user@example.com"
+            />
+          </div>
+          <div class="form-group">
+            <label for="register-password"><i class="material-icons">lock</i> パスワード</label>
+            <input
+              id="register-password"
+              name="password"
+              type="password"
+              [(ngModel)]="registerForm.password"
+              required
+              autocomplete="new-password"
+              placeholder="6文字以上"
+            />
+          </div>
+          <div class="form-group">
+            <label for="register-confirm"><i class="material-icons">lock</i> パスワード（確認）</label>
+            <input
+              id="register-confirm"
+              name="confirmPassword"
+              type="password"
+              [(ngModel)]="registerForm.confirmPassword"
+              required
+              autocomplete="new-password"
+              placeholder="もう一度パスワードを入力"
+            />
+          </div>
+          <div *ngIf="registerError" class="error-message">{{ registerError }}</div>
+          <div class="form-actions">
+            <button class="register-button" type="submit" [disabled]="registerFormRef.invalid">登録</button>
+            <button class="link-button" type="button" (click)="showLogin()">ログインはこちら</button>
+          </div>
+          <hr class="form-divider" />
+          <div class="form-links">
+            <span>パスワードは6文字以上で設定してください。</span>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="content-container" #contentContainer>
+      <!-- リスト表示 -->
+      <div class="main-panel" *ngIf="currentView === 'list'">
+        <div class="panel-toggle">
+          <button class="toggle-button" [class.active]="activePanel === 'projects'" (click)="activePanel = 'projects'">
+            <i>📂</i> プロジェクト
+          </button>
+          <button class="toggle-button" [class.active]="activePanel === 'tasks'" (click)="activePanel = 'tasks'">
+            <i>📝</i> タスク
+          </button>
+        </div>
+
+        <div class="panel projects-panel" *ngIf="activePanel === 'projects'">
+          <div class="panel-header">
+            <h2>プロジェクト一覧</h2>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="add-button" (click)="showProjectForm = true">+ 新規プロジェクト</button>
+            </div>
+          </div>
+
+          <div class="project-form edit-form-common" *ngIf="showProjectForm">
+            <div class="form-group">
+              <label>プロジェクト名 <span class="required">*</span></label>
+              <input type="text" id="newProject-name" name="name" [(ngModel)]="newProject.name" placeholder="プロジェクト名を入力">
+            </div>
+            <div class="form-group">
+              <label>説明</label>
+              <textarea id="newProject-description" name="description" [(ngModel)]="newProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+            </div>
+            <div class="form-group">
+              <label>期間 <span class="required">*</span></label>
+              <div class="datetime-range">
+                <div class="datetime-input">
+                  <label class="sublabel">開始日 <span class="required">*</span></label>
+                  <div class="inputs-wrapper">
+                    <input type="date" id="newProject-startDate" name="startDate" [(ngModel)]="newProject.startDate" placeholder="開始日">
+                  </div>
+                </div>
+                <div class="datetime-input">
+                  <label class="sublabel">終了日 <span class="required">*</span></label>
+                  <div class="inputs-wrapper">
+                    <input type="date" id="newProject-endDate" name="endDate" [(ngModel)]="newProject.endDate" placeholder="終了日">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>カテゴリ</label>
+              <input type="text" id="newProject-category" name="category" [(ngModel)]="newProject.category" placeholder="カテゴリを入力">
+            </div>
+            <div class="form-group">
+              <label>担当者</label>
+              <input type="text" id="newProject-assignee" name="assignee" [(ngModel)]="newProject.assignee" placeholder="担当者を入力">
+            </div>
+            <div class="form-actions">
+              <button class="cancel-button" (click)="resetProjectForm()">キャンセル</button>
+              <button class="save-button" (click)="addProject()">保存</button>
+            </div>
+          </div>
+
+          <div class="project-form edit-form-common" *ngIf="editingProject">
+            <div class="form-group">
+              <label>プロジェクト名 <span class="required">*</span></label>
+              <input type="text" id="editingProject-name" name="name" [(ngModel)]="editingProject.name" placeholder="プロジェクト名を入力">
+            </div>
+            <div class="form-group">
+              <label>説明</label>
+              <textarea id="editingProject-description" name="description" [(ngModel)]="editingProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+            </div>
+            <div class="form-group">
+              <label>期間 <span class="required">*</span></label>
+              <div class="datetime-range">
+                <div class="datetime-input">
+                  <label class="sublabel">開始日 <span class="required">*</span></label>
+                  <div class="inputs-wrapper">
+                    <input type="date" id="editingProject-startDate" name="startDate" [(ngModel)]="editingProject.startDate" placeholder="開始日">
+                  </div>
+                </div>
+                <div class="datetime-input">
+                  <label class="sublabel">終了日 <span class="required">*</span></label>
+                  <div class="inputs-wrapper">
+                    <input type="date" id="editingProject-endDate" name="endDate" [(ngModel)]="editingProject.endDate" placeholder="終了日">
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>カテゴリ</label>
+              <input type="text" id="editingProject-category" name="category" [(ngModel)]="editingProject.category" placeholder="カテゴリを入力">
+            </div>
+            <div class="form-group">
+              <label>担当者</label>
+              <input type="text" id="editingProject-assignee" name="assignee" [(ngModel)]="editingProject.assignee" placeholder="担当者を入力">
+            </div>
+            <div class="form-actions">
+              <button class="cancel-button" (click)="cancelProjectEdit()">キャンセル</button>
+              <button class="save-button" (click)="saveProjectEdit()">保存</button>
+            </div>
+          </div>
+
+          <div class="project-list">
+            <div class="project-item" *ngFor="let project of projects; trackBy: trackByProjectId" (click)="selectProject(project)">
+              <div class="project-header">
+                <h3>{{ project.name }}</h3>
+                <div class="project-actions">
+                  <button class="edit-button" (click)="editProject(project); $event.stopPropagation()">
+                    <i>✏️</i>
+                  </button>
+                  <button class="delete-button" (click)="$event.stopPropagation(); deleteProject(project.id!)">
+                    <i>🗑️</i>
+                  </button>
+                </div>
+              </div>
+              <p class="project-description">{{ project.description }}</p>
+              <div class="project-meta">
+                <span class="project-duration">期間: {{ calculateProjectDuration(project) }}</span>
+                <span class="project-category" *ngIf="project.category">カテゴリ: {{ project.category }}</span>
+                <span class="project-assignee" *ngIf="project.assignee">担当者: {{ project.assignee }}</span>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="project.progress"></div>
+                </div>
+                <div class="progress-text">進捗: {{ project.progress }}%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel tasks-panel" *ngIf="activePanel === 'tasks'">
+          <div class="panel-header">
+            <h2>タスク一覧</h2>
+          </div>
+
+          <div class="tasks-panel">
+            <div class="project-tasks" *ngFor="let project of projects">
+              <div class="project-task-header-container">
+                <h3 class="project-task-header">{{ project?.name || '' }}</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button class="add-task-button" (click)="addTaskToProject(project)" *ngIf="project">
+                    <i>➕</i> タスク追加
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <!-- タスク追加フォーム -->
+                <div class="task-form edit-form-common" *ngIf="project.id && projectTaskForms[project.id]">
+                  <div class="form-group">
+                    <label>タスク名 <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="newTasks[project.id].title" placeholder="タスク名を入力">
+                  </div>
+                  <div class="form-group">
+                    <label>説明</label>
+                    <textarea [(ngModel)]="newTasks[project.id].description" placeholder="説明を入力"></textarea>
+                  </div>
+                  <div class="form-group">
+                    <label>担当者</label>
+                    <input type="text" [(ngModel)]="newTasks[project.id].assignee" placeholder="担当者を入力">
+                  </div>
+                  <div class="form-group">
+                    <label>ステータス</label>
+                    <select [(ngModel)]="newTasks[project.id].status">
+                      <option value="not-started">未着手</option>
+                      <option value="in-progress">進行中</option>
+                      <option value="completed">完了</option>
+                    </select>
+                  </div>
+                  <div class="form-group" *ngIf="newTasks[project.id].status === 'completed'">
+                    <label>完了日</label>
+                    <input type="date" [(ngModel)]="newTasks[project.id].completedDate" [max]="(newTasks[project.id].endDate || '')">
+                  </div>
+                  <div class="datetime-range">
+                    <div class="datetime-input">
+                      <label>開始日時 <span class="required">*</span></label>
+                      <div class="inputs-wrapper">
+                        <input type="date" [(ngModel)]="newTasks[project.id].startDate" [min]="project.startDate" [max]="project.endDate">
+                      </div>
+                    </div>
+                    <div class="datetime-input">
+                      <label>終了日時 <span class="required">*</span></label>
+                      <div class="inputs-wrapper">
+                        <input type="date" [(ngModel)]="newTasks[project.id].endDate" [min]="project.startDate" [max]="project.endDate">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="form-actions">
+                    <button class="cancel-button" (click)="resetTaskForm(project.id)">キャンセル</button>
+                    <button class="save-button" (click)="createTask(project.id)">追加</button>
+                  </div>
+                </div>
+
+                <!-- allTasksからprojectIdで絞り込んで表示 -->
+                <div class="task-item" *ngFor="let task of getTasksByProjectId(project.id || '')">
+                  <div>
+                    <div class="task-row" style="display: flex; align-items: center; gap: 1.2em; width: 100%;">
+                      <span class="task-title" style="font-weight: bold; margin-right: 1em; white-space: nowrap; font-size: 1.5em;">{{ task.title }}</span>
+                      <span class="task-completed-label" style="font-size: 12px; margin-right: 0.5em;">完了日</span>
+                      <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, getTaskProperty(task, 'projectId'))" style="width: 130px; margin-right: 0.5em;">
+                      <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))">
+                        <option value="not-started">未着手</option>
+                        <option value="in-progress">進行中</option>
+                        <option value="completed">完了</option>
+                      </select>
+                      <div class="task-actions" style="display: flex; gap: 0.5em; margin-right: 1em;">
+                        <button class="edit-button" (click)="editTask(task, getTaskProperty(task, 'projectId'))">
+                          <i>✏️</i>
+                        </button>
+                        <button class="delete-button" (click)="deleteTask(task.id, getTaskProperty(task, 'projectId'))">
+                          <i>🗑️</i>
+                        </button>
+                      </div>
+                      <span class="task-period" style="margin-right: 1em; white-space: nowrap;">期間: {{ calculateTaskDuration(task, false) }}</span>
+                      <span class="task-assignee" style="margin-right: 1em; white-space: nowrap;" *ngIf="task.assignee">担当: {{ task.assignee }}</span>
+                      <span class="task-description" style="margin-right: 1em; white-space: nowrap; color: #666;" *ngIf="task.description">{{ task.description }}</span>
+                    </div>
+                    <div class="task-meta">
+                      <!-- 必要なメタ情報をここに -->
+                    </div>
+                  </div>
+                  <app-task-comment-section [taskId]="task.id"></app-task-comment-section>
+                </div>
+              </div>
+            </div>
+
+            <!-- ビッグプロジェクトのタスク -->
+            <div class="project-tasks" *ngFor="let bigProject of bigProjects">
+              <ng-container *ngFor="let subProject of bigProject?.subProjects || []">
+                <div class="project-task-header-container">
+                  <h3 class="project-task-header">{{ bigProject?.name || '' }} > {{ subProject?.name || '' }}</h3>
+                  <button class="add-task-button" (click)="showSubProjectTaskCreateForm(subProject?.id)">
+                    <i>➕</i> タスク追加
+                  </button>
+                </div>
+
+                <div class="task-items">
+                  <div class="task-item" *ngFor="let task of subProject?.tasks || []">
+                    <div *ngIf="!editingSubProjectTask || editingSubProjectTask.task.id !== task.id">
+                      <div class="task-header">
+                        <h5>{{ task?.title || '' }}</h5>
+                        <div class="task-actions">
+                          <div style="display: flex; flex-direction: column; align-items: flex-start; margin-right: 0.5em;">
+                            <label style="font-size: 12px; margin-bottom: 2px;">完了日</label>
+                            <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, '' + (bigProject?.id || getBigProjectIdBySubProjectId(subProject.id) || ''))" style="width: 130px;">
+                          </div>
+                          <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, '' + (bigProject?.id || getBigProjectIdBySubProjectId(subProject.id) || ''))" style="margin-right: 0.5em;">
+                            <option value="not-started">未着手</option>
+                            <option value="in-progress">進行中</option>
+                            <option value="completed">完了</option>
+                          </select>
+                          <button class="edit-button" (click)="editSubProjectTask(bigProject?.id!, subProject?.id!, task)">
+                            <i>✏️</i>
+                          </button>
+                          <button class="delete-button" (click)="deleteSubProject(bigProject.id, subProject.id)">
+                            <i>🗑️</i>
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <p *ngIf="task?.description" class="task-description">{{ task.description }}</p>
+                      
+                      <div class="task-meta">
+                        <span *ngIf="task.assignee">担当: {{ task.assignee }}</span>
+                        <span>期間: {{ calculateSubProjectTaskDuration(task) }}</span>
+                        <span class="task-status" [class]="task.status">
+                          {{ task.status === 'not-started' ? '未着手' : 
+                             task.status === 'in-progress' ? '進行中' : '完了' }}
+                        </span>
+                      </div>
+                      <!-- サブタスク用コメント欄（編集フォームの前に配置） -->
+                      <app-task-comment-section [taskId]="task.id"></app-task-comment-section>
+                      <!-- サブタスク編集フォーム -->
+                      <div *ngIf="editingSubProjectTask && editingSubProjectTask.task.id === task.id" class="task-edit-form-inline edit-form-common">
+                        <div class="form-group">
+                          <label for="edit-task-title">タスク名 <span class="required">*</span></label>
+                          <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingSubProjectTask.task.title" required>
+                        </div>
+                        <div class="form-group">
+                          <label for="edit-task-description">説明</label>
+                          <textarea id="edit-task-description" name="description" [(ngModel)]="editingSubProjectTask.task.description"></textarea>
+                        </div>
+                        <div class="form-group">
+                          <label for="edit-task-assignee">担当者</label>
+                          <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingSubProjectTask.task.assignee">
+                        </div>
+                        <div class="form-group">
+                          <label>ステータス</label>
+                          <select [(ngModel)]="editingSubProjectTask.task.status">
+                            <option value="not-started">未着手</option>
+                            <option value="in-progress">進行中</option>
+                            <option value="completed">完了</option>
+                          </select>
+                        </div>
+                        <div class="form-group" *ngIf="editingSubProjectTask.task.status === 'completed'">
+                          <label for="edit-task-completedDate">完了日</label>
+                          <input id="edit-task-completedDate" name="completedDate" type="date" [(ngModel)]="editingSubProjectTask.task.completedDate" [max]="editingSubProjectTask.task.endDate || ''">
+                        </div>
+                        <div class="datetime-range">
+                          <div class="datetime-input">
+                            <label for="edit-task-startDate">開始日時 <span class="required">*</span></label>
+                            <input id="edit-task-startDate" name="startDate" type="date" [(ngModel)]="editingSubProjectTask.task.startDate" [min]="getSubProjectStartDate(editingSubProjectTask.subProjectId)" [max]="getSubProjectEndDate(editingSubProjectTask.subProjectId)">
+                          </div>
+                          <div class="datetime-input">
+                            <label for="edit-task-endDate">終了日時 <span class="required">*</span></label>
+                            <input id="edit-task-endDate" name="endDate" type="date" [(ngModel)]="editingSubProjectTask.task.endDate" [min]="getSubProjectStartDate(editingSubProjectTask.subProjectId)" [max]="getSubProjectEndDate(editingSubProjectTask.subProjectId)">
+                          </div>
+                        </div>
+                        <div class="form-actions">
+                          <button class="cancel-button" (click)="cancelTaskEdit()">キャンセル</button>
+                          <button class="save-button" (click)="saveTaskEdit()">保存</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ガントチャート表示 -->
+      <div *ngIf="currentView === 'gantt'" class="gantt-view">
+        <div class="gantt-container">
+          <div class="gantt-selector" style="margin-bottom: 1rem;">
+            <label>表示対象:</label>
+            <select [(ngModel)]="selectedGanttTargetId" (change)="onGanttTargetChange()">
+              <optgroup label="プロジェクト">
+                <option *ngFor="let project of projects" [value]="'project-' + project.id">
+                  {{ project.name }}
+                </option>
+              </optgroup>
+              <optgroup label="サブプロジェクト">
+                <option *ngFor="let subProject of currentSubProjects" [value]="'sub-' + subProject.id">
+                  <span style='color:#1976d2;font-weight:bold'>{{ getBigProjectNameBySubProjectId(subProject.id) }}</span> ＞ {{ subProject.name }}
+                </option>
+              </optgroup>
+            </select>
+          </div>
+          <h2>{{ selectedGanttTargetName }}</h2>
+          
+          <div class="gantt-header">
+            <div class="gantt-header-row">
+              <div class="gantt-task-info">タスク名称</div>
+              <div class="gantt-timeline">
+                <div class="gantt-months">
+                  <div class="gantt-month" *ngFor="let month of ganttMonths">{{ month }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="gantt-body">
+            <div class="gantt-task-row" *ngFor="let task of ganttTasks">
+              <div class="gantt-task-info">
+                <div class="gantt-task-info-row">
+                  <span class="task-name">{{ task.name }}</span>
+                  <span class="task-assignee">{{ task.assignee }}</span>
+                  <span class="task-actions">
+                    <button class="edit-button" (click)="editTask(getOriginalTask(task), getTaskProperty(task, 'projectId'))">
+                      <i>✏️</i>
+                    </button>
+                    <button class="delete-button" (click)="onGanttTaskDelete(task)">
+                      <i>🗑️</i>
+                    </button>
+                  </span>
+                </div>
+              </div>
+              <div class="gantt-timeline">
+                <div class="gantt-task-bar" 
+                     [style.left]="calculateTaskPosition(task).left"
+                     [style.width]="calculateTaskPosition(task).width"
+                     [style.background-color]="calculateTaskPosition(task).backgroundColor"
+                     [title]="task.startDate + ' ～ ' + task.endDate">
+                  <div class="task-bar-tooltip">
+                    {{ task.startDate }} ～ {{ task.endDate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- タスク編集モーダルはmainタグの直前に1か所だけ配置 -->
+          <div class="modal-overlay" *ngIf="editingTask">
+            <div class="task-edit-form edit-form-common">
+              <h3>タスクの編集</h3>
+              <div class="form-group">
+                <label for="edit-task-title">タスク名 <span class="required">*</span></label>
+                <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingTask.task.title" required>
+              </div>
+              <div class="form-group">
+                <label for="edit-task-description">説明</label>
+                <textarea id="edit-task-description" name="description" [(ngModel)]="editingTask.task.description"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="edit-task-assignee">担当者</label>
+                <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingTask.task.assignee">
+              </div>
+              <div class="form-group">
+                <label>ステータス</label>
+                <select [(ngModel)]="editingTask.task.status">
+                  <option value="not-started">未着手</option>
+                  <option value="in-progress">進行中</option>
+                  <option value="completed">完了</option>
+                </select>
+              </div>
+              <div class="form-group" *ngIf="editingTask.task.status === 'completed'">
+                <label for="edit-task-completedDate">完了日</label>
+                <input id="edit-task-completedDate" name="completedDate" type="date" [(ngModel)]="editingTask.task.completedDate" [max]="editingTask.task.endDate || ''">
+              </div>
+              <div class="datetime-range">
+                <div class="datetime-input">
+                  <label for="edit-task-startDate">開始日時 <span class="required">*</span></label>
+                  <input id="edit-task-startDate" name="startDate" type="date" [(ngModel)]="editingTask.task.startDate" [min]="getProjectStartDate(editingTask.projectId)" [max]="getProjectEndDate(editingTask.projectId)">
+                </div>
+                <div class="datetime-input">
+                  <label for="edit-task-endDate">終了日時 <span class="required">*</span></label>
+                  <input id="edit-task-endDate" name="endDate" type="date" [(ngModel)]="editingTask.task.endDate" [min]="getProjectStartDate(editingTask.projectId)" [max]="getProjectEndDate(editingTask.projectId)">
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="cancel-button" (click)="cancelTaskEdit()">キャンセル</button>
+                <button class="save-button" (click)="saveTaskEdit()">保存</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ボード表示 -->
+      <div *ngIf="currentView === 'board'" class="board-view">
+        <div class="board-columns">
+          <!-- 未着手カラム -->
+          <div class="board-column">
+            <h3>未着手</h3>
+            <div class="board-tasks">
+              <div *ngFor="let task of boardTasksNotStarted" class="board-task" [title]="task.description || ''">
+                <div class="task-tooltip">
+                  <div class="tooltip-content">
+                    <div class="tooltip-header">{{ task.title }}</div>
+                    <div class="tooltip-description" *ngIf="task.description">{{ task.description }}</div>
+                    <div class="tooltip-meta">
+                      <div>プロジェクト: {{ getTaskProjectName(task) }}</div>
+                      <div>担当者: {{ task.assignee || '未割当' }}</div>
+                      <div>期間: {{ getTaskDuration(task) }}</div>
+                      <div>ステータス: {{ getStatusLabel(task.status) }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="task-header">
+                  <h4>{{ task.title }}</h4>
+                </div>
+                <div class="task-controls">
+                  <div style="display: flex; flex-direction: column; align-items: flex-start; margin-right: 0.5em;">
+                    <label style="font-size: 12px; margin-bottom: 2px;">完了日</label>
+                    <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, getTaskProperty(task, 'projectId'))" style="width: 130px; margin-right: 0.5em;">
+                  </div>
+                  <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))">
+                    <option value="not-started">未着手</option>
+                    <option value="in-progress">進行中</option>
+                    <option value="completed">完了</option>
+                  </select>
+                  <!-- 削除ボタン削除 -->
+                </div>
+                <div class="task-assignee">{{ task.assignee }}</div>
+              </div>
+            </div>
+          </div>
+          <!-- 進行中カラム -->
+          <div class="board-column">
+            <h3>進行中</h3>
+            <div class="board-tasks">
+              <div *ngFor="let task of boardTasksInProgress" class="board-task">
+                <div class="task-tooltip">
+                  <div class="tooltip-content">
+                    <div class="tooltip-header">{{ task.title }}</div>
+                    <div class="tooltip-description" *ngIf="task.description">{{ task.description }}</div>
+                    <div class="tooltip-meta">
+                      <div>プロジェクト: {{ getTaskProjectName(task) }}</div>
+                      <div>担当者: {{ task.assignee || '未割当' }}</div>
+                      <div>期間: {{ getTaskDuration(task) }}</div>
+                      <div>ステータス: {{ getStatusLabel(task.status) }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="task-header">
+                  <h4>{{ task.title }}</h4>
+                </div>
+                <div class="task-controls">
+                  <div style="display: flex; flex-direction: column; align-items: flex-start; margin-right: 0.5em;">
+                    <label style="font-size: 12px; margin-bottom: 2px;">完了日</label>
+                    <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, getTaskProperty(task, 'projectId'))" style="width: 130px; margin-right: 0.5em;">
+                  </div>
+                  <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))">
+                    <option value="not-started">未着手</option>
+                    <option value="in-progress">進行中</option>
+                    <option value="completed">完了</option>
+                  </select>
+                  <!-- 削除ボタン削除 -->
+                </div>
+                <div class="task-assignee">{{ task.assignee }}</div>
+              </div>
+            </div>
+          </div>
+          <!-- 完了カラム -->
+          <div class="board-column">
+            <h3>完了</h3>
+            <div class="board-tasks">
+              <div *ngFor="let task of boardTasksCompleted" class="board-task">
+                <div class="task-tooltip">
+                  <div class="tooltip-content">
+                    <div class="tooltip-header">{{ task.title }}</div>
+                    <div class="tooltip-description" *ngIf="task.description">{{ task.description }}</div>
+                    <div class="tooltip-meta">
+                      <div>プロジェクト: {{ getTaskProjectName(task) }}</div>
+                      <div>担当者: {{ task.assignee || '未割当' }}</div>
+                      <div>期間: {{ getTaskDuration(task) }}</div>
+                      <div>ステータス: {{ getStatusLabel(task.status) }}</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="task-header">
+                  <h4>{{ task.title }}</h4>
+                </div>
+                <div class="task-controls">
+                  <div style="display: flex; flex-direction: column; align-items: flex-start; margin-right: 0.5em;">
+                    <label style="font-size: 12px; margin-bottom: 2px;">完了日</label>
+                    <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, getTaskProperty(task, 'projectId'))" style="width: 130px; margin-right: 0.5em;">
+                  </div>
+                  <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))">
+                    <option value="not-started">未着手</option>
+                    <option value="in-progress">進行中</option>
+                    <option value="completed">完了</option>
+                  </select>
+                  <!-- 削除ボタン削除 -->
+                </div>
+                <div class="task-assignee">{{ task.assignee }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- タスク編集モーダル削除 -->
+      </div>
+
+      <!-- バーンアップ表示 -->
+      <div *ngIf="currentView === 'burnup'" class="burnup-view">
+        <div class="burnup-container">
+          <h2>プロジェクトバーンアップチャート</h2>
+          <ng-template #noBurnupDates>
+            <div style="width: 100%; max-width: 100%; height: 400px; background: #fff; border: 2px dashed #bbb; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; margin: 2rem 0; color: #888; font-size: 1.3rem;">
+              開始日と終了日を入力してください。
+            </div>
+          </ng-template>
+
+          <div class="project-selector">
+            <label>プロジェクト:</label>
+            <select [(ngModel)]="selectedProjectForBurnupId" (change)="onBurnupProjectChange()">
+              <optgroup label="プロジェクト">
+                <option *ngFor="let project of projects" [value]="project.id">{{ project.name }}</option>
+              </optgroup>
+              <optgroup label="サブプロジェクト">
+                <option *ngFor="let subProject of currentSubProjects" [value]="'sub-' + subProject.id">
+                  <span style='color:#1976d2;font-weight:bold'>{{ getBigProjectNameBySubProjectId(subProject.id) }}</span> ＞ {{ subProject.name }}
+                </option>
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- 進捗率バー（縦棒グラフ） -->
+          <div *ngIf="selectedProjectForBurnup && getBurnupTaskCount() > 1 && selectedProjectForBurnup.startDate !== selectedProjectForBurnup.endDate"
+            #barChartContainer
+            style="overflow-x: auto; margin: 1.5rem 0; width: 100%; min-width: 1200px; display: inline-block;">
+            <svg width="100%"
+                 [attr.width]="barChartContainerRef?.nativeElement.clientWidth"
+                 [attr.height]="360"
+                 [attr.viewBox]="'0 0 ' + (barChartContainerRef?.nativeElement.clientWidth || 1200) + ' 360'"
+                 style="background: #f8f9fa; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+              <!-- 理想線（左下→右上の点線） -->
+              <line
+                *ngIf="getBurnupBarChartLabelsAndPositions().length > 1"
+                [attr.x1]="getBurnupBarChartLabelsAndPositions()[0].x"
+                [attr.y1]="340"
+                [attr.x2]="getBurnupBarChartLabelsAndPositions()[getBurnupBarChartLabelsAndPositions().length-1].x"
+                [attr.y2]="80"
+                stroke="#888"
+                stroke-width="2"
+                stroke-dasharray="6,4" />
+              <!-- 横軸ライン -->
+              <line [attr.x1]="40" [attr.y1]="340" [attr.x2]="barChartContainerRef?.nativeElement.clientWidth - 40" [attr.y2]="340" stroke="#bbb" stroke-width="1" />
+              <!-- Y軸ラベル -->
+              <text x="8" y="80" font-size="18" fill="#888">100%</text>
+              <text x="8" y="340" font-size="18" fill="#888">0%</text>
+              <!-- バーとラベル（完了タスクが1件以上のときのみ） -->
+              <g *ngIf="getBurnupCompletedTaskCount() > 0">
+                <ng-container *ngFor="let item of getBurnupBarChartLabelsAndPositions(); let i = index">
+                  <!-- 青いチップ（完了日） -->
+                  <circle *ngIf="i !== 0 && i !== getBurnupBarChartLabelsAndPositions().length - 1"
+                    [attr.cx]="item.x"
+                    [attr.cy]="340 - (item.progress * 2.6)"
+                    r="9"
+                    fill="#2196F3"
+                    class="burnup-chip"
+                  >
+                    <title>{{ item.date }}</title>
+                  </circle>
+                  <!-- 進捗率ラベル（省略可） -->
+                  <text *ngIf="i !== 0 && i !== getBurnupBarChartLabelsAndPositions().length - 1"
+                    [attr.x]="item.x"
+                    [attr.y]="340 - (item.progress * 2.6) - 10"
+                    text-anchor="middle"
+                    font-size="24"
+                    fill="#1976d2"
+                    font-weight="bold"
+                  >{{ item.progress }}%</text>
+                </ng-container>
+              </g>
+              <!-- X軸ラベル：開始日・終了日のみは常に表示 -->
+              <g>
+                <ng-container *ngFor="let item of getBurnupBarChartLabelsAndPositions(); let i = index">
+                  <text
+                    *ngIf="i === 0 || i === getBurnupBarChartLabelsAndPositions().length - 1"
+                    [attr.x]="i === getBurnupBarChartLabelsAndPositions().length - 1 ? (barChartContainerRef?.nativeElement.clientWidth - 40) : item.x"
+                    y="355"
+                    text-anchor="middle"
+                    font-size="18"
+                    fill="#333"
+                    font-weight="600"
+                  >{{ item.date | date:'yyyy/MM/dd' }}</text>
+                </ng-container>
+              </g>
+              <!-- 実績線（左下→各バー頂点を結ぶ青線）は完了タスクが1件以上のときのみ -->
+              <polyline
+                *ngIf="getBurnupCompletedTaskCount() > 0"
+                [attr.points]="getBurnupActualPolylinePoints()"
+                fill="none"
+                stroke="#4CAF50"
+                stroke-width="5"
               />
             </svg>
-          </a>
-        }
+          </div>
+          <!-- チャートが表示できない場合のメッセージ -->
+          <div *ngIf="selectedProjectForBurnup && getBurnupTaskCount() <= 1" style="width:100%;max-width:100%;height:120px;display:flex;align-items:center;justify-content:center;color:#888;font-size:1.2em;">
+            タスクが2つ以上ないためバーンアップチャートを表示できません。
+          </div>
+          <div *ngIf="selectedProjectForBurnup && selectedProjectForBurnup.startDate === selectedProjectForBurnup.endDate" style="width:100%;max-width:100%;height:120px;display:flex;align-items:center;justify-content:center;color:#888;font-size:1.2em;">
+            期間が1日の場合はバーンアップチャートを表示できません。
+          </div>
+
+          <div class="no-project-message" *ngIf="!selectedProjectForBurnup">
+            <p>プロジェクトを選択してください</p>
+          </div>
+        </div>
       </div>
-      <div class="social-links">
-        <a
-          href="https://github.com/angular/angular"
-          aria-label="Github"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="25"
-            height="24"
-            viewBox="0 0 25 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="Github"
-          >
-            <path
-              d="M12.3047 0C5.50634 0 0 5.50942 0 12.3047C0 17.7423 3.52529 22.3535 8.41332 23.9787C9.02856 24.0946 9.25414 23.7142 9.25414 23.3871C9.25414 23.0949 9.24389 22.3207 9.23876 21.2953C5.81601 22.0377 5.09414 19.6444 5.09414 19.6444C4.53427 18.2243 3.72524 17.8449 3.72524 17.8449C2.61064 17.082 3.81137 17.0973 3.81137 17.0973C5.04697 17.1835 5.69604 18.3647 5.69604 18.3647C6.79321 20.2463 8.57636 19.7029 9.27978 19.3881C9.39052 18.5924 9.70736 18.0499 10.0591 17.7423C7.32641 17.4347 4.45429 16.3765 4.45429 11.6618C4.45429 10.3185 4.9311 9.22133 5.72065 8.36C5.58222 8.04931 5.16694 6.79833 5.82831 5.10337C5.82831 5.10337 6.85883 4.77319 9.2121 6.36459C10.1965 6.09082 11.2424 5.95546 12.2883 5.94931C13.3342 5.95546 14.3801 6.09082 15.3644 6.36459C17.7023 4.77319 18.7328 5.10337 18.7328 5.10337C19.3942 6.79833 18.9789 8.04931 18.8559 8.36C19.6403 9.22133 20.1171 10.3185 20.1171 11.6618C20.1171 16.3888 17.2409 17.4296 14.5031 17.7321C14.9338 18.1012 15.3337 18.8559 15.3337 20.0084C15.3337 21.6552 15.3183 22.978 15.3183 23.3779C15.3183 23.7009 15.5336 24.0854 16.1642 23.9623C21.0871 22.3484 24.6094 17.7341 24.6094 12.3047C24.6094 5.50942 19.0999 0 12.3047 0Z"
-            />
-          </svg>
-        </a>
-        <a
-          href="https://twitter.com/angular"
-          aria-label="Twitter"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="Twitter"
-          >
-            <path
-              d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
-            />
-          </svg>
-        </a>
-        <a
-          href="https://www.youtube.com/channel/UCbn1OgGei-DV7aSRo_HaAiw"
-          aria-label="Youtube"
-          target="_blank"
-          rel="noopener"
-        >
-          <svg
-            width="29"
-            height="20"
-            viewBox="0 0 29 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            alt="Youtube"
-          >
-            <path
-              fill-rule="evenodd"
-              clip-rule="evenodd"
-              d="M27.4896 1.52422C27.9301 1.96749 28.2463 2.51866 28.4068 3.12258C29.0004 5.35161 29.0004 10 29.0004 10C29.0004 10 29.0004 14.6484 28.4068 16.8774C28.2463 17.4813 27.9301 18.0325 27.4896 18.4758C27.0492 18.9191 26.5 19.2389 25.8972 19.4032C23.6778 20 14.8068 20 14.8068 20C14.8068 20 5.93586 20 3.71651 19.4032C3.11363 19.2389 2.56449 18.9191 2.12405 18.4758C1.68361 18.0325 1.36732 17.4813 1.20683 16.8774C0.613281 14.6484 0.613281 10 0.613281 10C0.613281 10 0.613281 5.35161 1.20683 3.12258C1.36732 2.51866 1.68361 1.96749 2.12405 1.52422C2.56449 1.08095 3.11363 0.76113 3.71651 0.596774C5.93586 0 14.8068 0 14.8068 0C14.8068 0 23.6778 0 25.8972 0.596774C26.5 0.76113 27.0492 1.08095 27.4896 1.52422ZM19.3229 10L11.9036 5.77905V14.221L19.3229 10Z"
-            />
-          </svg>
-        </a>
+
+      <!-- 検索表示 -->
+      <div *ngIf="currentView === 'search'" class="search-view">
+        <div class="search-container">
+          <h2>検索</h2>
+          
+          <div class="search-form">
+            <div class="search-input-container">
+              <input type="text" 
+                     [(ngModel)]="searchQuery" 
+                     (ngModelChange)="onSearchQueryChange()"
+                     placeholder="プロジェクト名、タスク名、説明、担当者名などで検索..."
+                     class="search-input">
+              <div class="search-filters">
+                <label>
+                  <input type="checkbox" [(ngModel)]="searchFilters.projects" (change)="onSearchQueryChange()">
+                  プロジェクト
+                </label>
+                <label>
+                  <input type="checkbox" [(ngModel)]="searchFilters.tasks" (change)="onSearchQueryChange()">
+                  タスク
+                </label>
+                <label>
+                  <input type="checkbox" [(ngModel)]="searchFilters.bigProjects" (change)="onSearchQueryChange()">
+                  ビッグプロジェクト
+                </label>
+                <label>
+                  <input type="checkbox" [(ngModel)]="searchFilters.subProjects" (change)="onSearchQueryChange()">
+                  サブプロジェクト
+                </label>
+                <label>
+                  <input type="checkbox" [(ngModel)]="searchFilters.subTasks" (change)="onSearchQueryChange()">
+                  サブタスク
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="search-results" *ngIf="searchResults.length > 0">
+            <div class="search-result-item" *ngFor="let result of searchResults">
+              <div class="result-header">
+                <h3>{{ result.title }}</h3>
+                <span class="result-type" [class]="result.type">{{ result.typeLabel }}</span>
+              </div>
+              <p class="result-description" *ngIf="result.description">{{ result.description }}</p>
+              <div class="result-meta">
+                <span *ngIf="result.parent">{{ result.parent }}</span>
+                <span *ngIf="result.dates">{{ result.dates }}</span>
+                <span *ngIf="result.status" class="status-badge" [class]="result.status">
+                  {{ getStatusLabel(result.status) }}
+                </span>
+              </div>
+              <div class="result-actions">
+                <button class="view-button" (click)="navigateToResult(result)">
+                  <i>👁️</i> 表示
+                </button>
+                <button class="edit-button" (click)="editSearchResult(result)">
+                  <i>✏️</i> 編集
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-results" *ngIf="searchQuery && searchResults.length === 0">
+            <p>検索結果が見つかりませんでした。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ビッグプロジェクト表示 -->
+      <div *ngIf="currentView === 'bigProject'" class="big-project-view">
+        <div class="panel-header">
+          <h2>ビッグプロジェクト管理</h2>
+          <button class="add-button" (click)="showBigProjectCreateForm = true" *ngIf="!showBigProjectCreateForm">
+            + ビッグプロジェクト作成
+          </button>
+        </div>
+
+        <div class="big-project-form edit-form-common" *ngIf="showBigProjectCreateForm">
+          <div class="form-group">
+            <label>プロジェクト名 <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="newBigProject.name" placeholder="プロジェクト名を入力">
+          </div>
+          <div class="form-group">
+            <label>説明</label>
+            <textarea [(ngModel)]="newBigProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+          </div>
+          <div class="form-group">
+            <label>期間</label>
+            <div class="datetime-range">
+              <div class="datetime-input">
+                <label class="sublabel">開始日 <span class="required">*</span></label>
+                <input type="date" [(ngModel)]="newBigProject.startDate">
+              </div>
+              <div class="datetime-input">
+                <label class="sublabel">終了日 <span class="required">*</span></label>
+                <input type="date" [(ngModel)]="newBigProject.endDate">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>ステータス</label>
+            <select [(ngModel)]="newBigProject.status">
+              <option value="not-started">未着手</option>
+              <option value="active">進行中</option>
+              <option value="completed">完了</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>カテゴリー</label>
+            <input type="text" [(ngModel)]="newBigProject.category" placeholder="カテゴリーを入力">
+          </div>
+          <div class="form-group">
+            <label>担当者</label>
+            <input type="text" [(ngModel)]="newBigProject.assignee" placeholder="担当者を入力">
+          </div>
+          <div class="form-actions">
+            <button class="cancel-button" (click)="resetBigProjectForm()">キャンセル</button>
+            <button class="save-button" (click)="addBigProject()">保存</button>
+          </div>
+        </div>
+
+        <div class="big-project-form edit-form-common" *ngIf="editingBigProject">
+          <div class="form-group">
+            <label>プロジェクト名 <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editingBigProject.name" placeholder="ビッグプロジェクト名を入力">
+          </div>
+          <div class="form-group">
+            <label>説明</label>
+            <textarea [(ngModel)]="editingBigProject.description" placeholder="ビッグプロジェクトの説明を入力"></textarea>
+          </div>
+          <div class="form-group">
+            <label>期間</label>
+            <div class="datetime-range">
+              <div class="datetime-input">
+                <label class="sublabel">開始日 <span class="required">*</span></label>
+                <input type="date" [(ngModel)]="editingBigProject.startDate">
+              </div>
+              <div class="datetime-input">
+                <label class="sublabel">終了日 <span class="required">*</span></label>
+                <input type="date" [(ngModel)]="editingBigProject.endDate">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>ステータス</label>
+            <select [(ngModel)]="editingBigProject.status">
+              <option value="not-started">未着手</option>
+              <option value="active">進行中</option>
+              <option value="completed">完了</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>カテゴリー</label>
+            <input type="text" [(ngModel)]="editingBigProject.category" placeholder="カテゴリーを入力">
+          </div>
+          <div class="form-group">
+            <label>担当者</label>
+            <input type="text" [(ngModel)]="editingBigProject.assignee" placeholder="担当者を入力">
+          </div>
+          <div class="form-actions">
+            <button class="cancel-button" (click)="cancelBigProjectEdit()">キャンセル</button>
+            <button class="save-button" (click)="saveBigProjectEdit()">保存</button>
+          </div>
+        </div>
+
+        <div class="big-project-list">
+          <div class="big-project-item" *ngFor="let bigProject of bigProjects">
+            <div class="big-project-header">
+              <div class="big-project-title-and-actions">
+                <span class="big-project-title">{{ bigProject.name }}</span>
+                <div class="big-project-title-actions">
+                  <button class="edit-button" (click)="editBigProject(bigProject); $event.stopPropagation()">
+                    <i>✏️</i>
+                  </button>
+                  <button class="delete-button" (click)="deleteBigProject(bigProject.id); $event.stopPropagation()">
+                    <i>🗑️</i>
+                  </button>
+                </div>
+              </div>
+              <button class="expand-subprojects-button" (click)="selectBigProject(bigProject); $event.stopPropagation()">サブプロジェクト展開</button>
+              <div class="big-project-actions">
+                <button class="add-button" (click)="showSubProjectCreateForm(bigProject.id); $event.stopPropagation()">+ サブプロジェクト作成</button>
+              </div>
+            </div>
+            <p class="big-project-description">{{ bigProject.description }}</p>
+            <div class="big-project-meta">
+              <span class="big-project-duration">期間: {{ calculateBigProjectDuration(bigProject) }}</span>
+              <span class="big-project-status" [class]="bigProject.status">
+                ステータス: {{ bigProject.status === 'not-started' ? '未着手' : 
+                              bigProject.status === 'active' ? '進行中' : '完了' }}
+              </span>
+              <span class="big-project-category" *ngIf="bigProject.category">
+                カテゴリー: {{ bigProject.category }}
+              </span>
+              <span class="big-project-assignee" *ngIf="bigProject.assignee">
+                担当者: {{ bigProject.assignee }}
+              </span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="bigProject.progress"></div>
+            </div>
+            <div class="progress-text">進捗: {{ bigProject.progress }}%</div>
+            <!-- サブプロジェクトリストと編集フォームを展開状態のときだけ表示 -->
+            <div *ngIf="expandedBigProjectIds.has(bigProject.id)">
+              <div class="sub-project-list">
+                <div class="sub-project-item" *ngFor="let subProject of currentSubProjectsMap[bigProject.id] || []">
+                  <div class="sub-project-header">
+                    <div style="display: block;">
+                      <h5 style="margin-bottom: 0.2em;">{{ subProject.name || '名称未設定' }}</h5>
+                      <span class="sub-project-period" *ngIf="subProject.startDate && subProject.endDate" style="display: block; font-weight: normal; font-size: 0.95em; color: #666;">
+                        （{{ subProject.startDate }} ～ {{ subProject.endDate }}）
+                      </span>
+                      <div class="progress-bar" *ngIf="(currentSubTasksMap[subProject.id]?.length || subProject.tasks?.length)">
+                        <div class="progress-fill" [style.width.%]="getSubProjectProgressWithSubTasks(subProject)"></div>
+                      </div>
+                      <div class="progress-text" *ngIf="(currentSubTasksMap[subProject.id]?.length || subProject.tasks?.length)">
+                        進捗: {{ getSubProjectProgressWithSubTasks(subProject) }}%
+                      </div>
+                    </div>
+                    <div class="sub-project-actions">
+                      <button class="edit-button" (click)="editSubProject(bigProject.id, subProject)">
+                        <i>✏️</i>
+                      </button>
+                      <button class="delete-button" (click)="deleteSubProject(bigProject.id, subProject.id)">
+                        <i>🗑️</i>
+                      </button>
+                    </div>
+                  </div>
+                  <!-- サブタスク追加ボタンとフォームをここに追加 -->
+                  <button class="add-task-button" (click)="showSubTaskCreateForm(subProject.id)">+ サブタスク追加</button>
+                  <div class="sub-task-form edit-form-common" *ngIf="showSubTaskForm[subProject.id]">
+                    <div class="form-group">
+                      <label>タスク名 <span class="required">*</span></label>
+                      <input type="text" [(ngModel)]="newSubTask[subProject.id].title" required>
+                    </div>
+                    <div class="form-group">
+                      <label>説明</label>
+                      <textarea [(ngModel)]="newSubTask[subProject.id].description"></textarea>
+                    </div>
+                    <div class="form-group">
+                      <label>担当者</label>
+                      <input type="text" [(ngModel)]="newSubTask[subProject.id].assignee">
+                    </div>
+                    <div class="form-group">
+                      <label>ステータス</label>
+                      <select [(ngModel)]="newSubTask[subProject.id].status">
+                        <option value="not-started">未着手</option>
+                        <option value="in-progress">進行中</option>
+                        <option value="completed">完了</option>
+                      </select>
+                    </div>
+                    <div class="datetime-range">
+                      <div class="datetime-input">
+                        <label>開始日 <span class="required">*</span></label>
+                        <input type="date" [(ngModel)]="newSubTask[subProject.id].startDate" [min]="subProject.startDate" [max]="subProject.endDate">
+                      </div>
+                      <div class="datetime-input">
+                        <label>終了日 <span class="required">*</span></label>
+                        <input type="date" [(ngModel)]="newSubTask[subProject.id].endDate" [min]="subProject.startDate" [max]="subProject.endDate">
+                      </div>
+                    </div>
+                    <div class="form-actions">
+                      <button class="save-button" (click)="createSubTask(bigProject.id, subProject.id)">追加</button>
+                      <button class="cancel-button" (click)="resetSubTaskForm(subProject.id)">キャンセル</button>
+                    </div>
+                  </div>
+                  <!-- サブタスクリスト -->
+                  <div >
+                    <div class="task-item" *ngFor="let task of currentSubTasksMap[subProject.id] || subProject.tasks || []">
+                      <div *ngIf="task">
+                        <div class="task-header">
+                          <h5>{{ task.title }}</h5>
+                          <div class="task-actions" style="display: flex; align-items: center; gap: 0.5em;">
+                            <label style="font-size: 12px; margin-bottom: 2px; margin-right: 0.2em;">完了日</label>
+                            <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, '' + (bigProject?.id || getBigProjectIdBySubProjectId(subProject.id) || ''))" style="width: 130px; margin-right: 0.5em;">
+                            <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, '' + (bigProject?.id || getBigProjectIdBySubProjectId(subProject.id) || ''))" style="margin-right: 0.5em;">
+                              <option value="not-started">未着手</option>
+                              <option value="in-progress">進行中</option>
+                              <option value="completed">完了</option>
+                            </select>
+                            <button class="edit-button" (click)="editSubTask(bigProject.id, subProject.id, task)">
+                              <i>✏️</i>
+                            </button>
+                            <button class="delete-button" (click)="deleteSubProjectTask(bigProject.id, subProject.id, task.id)">
+                              <i>🗑️</i>
+                            </button>
+                          </div>
+                        </div>
+                        <p *ngIf="task.description" class="task-description">{{ task.description }}</p>
+                        <div class="task-meta">
+                          <span *ngIf="task.assignee">担当: {{ task.assignee }}</span>
+                          <span>期間: {{ calculateSubProjectTaskDuration(task) }}</span>
+                          <span class="task-status" [class]="task.status">
+                            {{ task.status === 'not-started' ? '未着手' : 
+                               task.status === 'in-progress' ? '進行中' : '完了' }}
+                          </span>
+                        </div>
+                        <!-- サブタスク編集フォーム -->
+                        <div class="sub-task-edit-form edit-form-common" *ngIf="editingSubTask && editingSubTask.bigProjectId === bigProject.id && editingSubTask.subProjectId === subProject.id && editingSubTask.subTask.id === task.id">
+                          <div class="form-group">
+                            <label>タスク名 <span class="required">*</span></label>
+                            <input type="text" [(ngModel)]="editingSubTask.subTask.title" required>
+                          </div>
+                          <div class="form-group">
+                            <label>説明</label>
+                            <textarea [(ngModel)]="editingSubTask.subTask.description"></textarea>
+                          </div>
+                          <div class="form-group">
+                            <label>担当者</label>
+                            <input type="text" [(ngModel)]="editingSubTask.subTask.assignee">
+                          </div>
+                          <div class="form-group">
+                            <label>ステータス</label>
+                            <select [(ngModel)]="editingSubTask.subTask.status">
+                              <option value="not-started">未着手</option>
+                              <option value="in-progress">進行中</option>
+                              <option value="completed">完了</option>
+                            </select>
+                          </div>
+                          <div class="form-group" *ngIf="editingSubTask.subTask.status === 'completed'">
+                            <label>完了日</label>
+                            <input type="date" [(ngModel)]="editingSubTask.subTask.completedDate" [max]="editingSubTask.subTask.endDate || ''">
+                          </div>
+                          <div class="datetime-range">
+                            <div class="datetime-input">
+                              <label>開始日時 <span class="required">*</span></label>
+                              <div class="inputs-wrapper">
+                                <input type="date" [(ngModel)]="editingSubTask.subTask.startDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
+                              </div>
+                            </div>
+                            <div class="datetime-input">
+                              <label>終了日時 <span class="required">*</span></label>
+                              <div class="inputs-wrapper">
+                                <input type="date" [(ngModel)]="editingSubTask.subTask.endDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
+                              </div>
+                            </div>
+                          </div>
+                          <div class="form-actions">
+                            <button class="cancel-button" (click)="cancelSubTaskEdit()">キャンセル</button>
+                            <button class="save-button" (click)="saveSubTaskEdit()">保存</button>
+                          </div>
+                        </div>
+                        <!-- サブタスク用コメント欄（編集フォームの前に配置） -->
+                        <app-task-comment-section [taskId]="task.id"></app-task-comment-section>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </main>
 
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * is only a placeholder * * * * * * * * * * * -->
-<!-- * * * * * * * * * * and can be replaced.  * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * End of Placeholder  * * * * * * * * * * * * -->
-<!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
+<!-- タスク編集モーダルはmainタグの直前に1か所だけ配置 -->
+<div class="modal-overlay" *ngIf="editingTask">
+  <div class="task-edit-form edit-form-common">
+    <h3>タスクの編集</h3>
+    <div class="form-group">
+      <label for="edit-task-title">タスク名 <span class="required">*</span></label>
+      <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingTask.task.title" required>
+    </div>
+    <div class="form-group">
+      <label for="edit-task-description">説明</label>
+      <textarea id="edit-task-description" name="description" [(ngModel)]="editingTask.task.description"></textarea>
+    </div>
+    <div class="form-group">
+      <label for="edit-task-assignee">担当者</label>
+      <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingTask.task.assignee">
+    </div>
+    <div class="form-group">
+      <label>ステータス</label>
+      <select [(ngModel)]="editingTask.task.status">
+        <option value="not-started">未着手</option>
+        <option value="in-progress">進行中</option>
+        <option value="completed">完了</option>
+      </select>
+    </div>
+    <div class="form-group" *ngIf="editingTask.task.status === 'completed'">
+      <label for="edit-task-completedDate">完了日</label>
+      <input id="edit-task-completedDate" name="completedDate" type="date" [(ngModel)]="editingTask.task.completedDate" [max]="editingTask.task.endDate || ''">
+    </div>
+    <div class="datetime-range">
+      <div class="datetime-input">
+        <label for="edit-task-startDate">開始日時 <span class="required">*</span></label>
+        <input id="edit-task-startDate" name="startDate" type="date" [(ngModel)]="editingTask.task.startDate" [min]="getProjectStartDate(editingTask.projectId)" [max]="getProjectEndDate(editingTask.projectId)">
+      </div>
+      <div class="datetime-input">
+        <label for="edit-task-endDate">終了日時 <span class="required">*</span></label>
+        <input id="edit-task-endDate" name="endDate" type="date" [(ngModel)]="editingTask.task.endDate" [min]="getProjectStartDate(editingTask.projectId)" [max]="getProjectEndDate(editingTask.projectId)">
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="cancel-button" (click)="cancelTaskEdit()">キャンセル</button>
+      <button class="save-button" (click)="saveTaskEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<router-outlet></router-outlet>
+
+<style>
+html, body {
+  font-size: 100%;
+}
+/* Make all UI except edit forms more compact */
+.project-item:not(.edit-form-common) {
+  display: flex;
+  align-items: center;
+  padding: 0.3em 0.5em !important;
+  font-size: 0.6rem !important;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  border: 1px solid #e0e0e0;
+  margin-top: 0.5em;
+  margin-bottom: 0.2em !important;
+  gap: 1.2em;
+}
+.project-item h3 {
+  margin: 0 1em 0 0;
+  font-size: 1.1em;
+  white-space: nowrap;
+}
+.project-header {
+  display: flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+}
+.project-actions {
+  display: flex;
+  gap: 0.5em;
+  margin-right: 1em;
+}
+.project-description, .project-meta, .progress-bar, .progress-text {
+  margin-right: 0;
+  margin-bottom: 0;
+  white-space: nowrap;
+}
+.project-meta {
+  display: flex;
+  align-items: center;
+  max-width: 600px;
+  width: 100%;
+  margin: 0 auto;
+  gap: 0.5em;
+}
+.progress-bar {
+  flex: 1 1 0;
+  min-width: 120px;
+  max-width: 420px;
+  height: 10px;
+  background: #eee;
+  border-radius: 3px;
+  overflow: hidden;
+  margin: 0;
+}
+.progress-fill {
+  height: 100%;
+  background: #8bc34a;
+  border-radius: 3px;
+}
+.progress-text {
+  min-width: 60px;
+  text-align: right;
+  margin: 0 0 0 0.5em;
+  padding: 0;
+  white-space: nowrap;
+  font-size: 0.95em;
+}
+.project-item:not(.edit-form-common):hover,
+.task-item:not(.edit-form-common):hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.progress-bar:not(.edit-form-common .progress-bar) {
+  height: 2px !important;
+}
+/* Make edit forms extremely compact vertically */
+.edit-form-common, .task-edit-form, .big-project-form, .sub-project-form, .sub-task-form, .sub-project-edit-form, .sub-project-task-edit-form, .sub-task-edit-form {
+  padding: 0.1rem !important;
+}
+.edit-form-common .form-group, .task-edit-form .form-group, .big-project-form .form-group, .sub-project-form .form-group, .sub-task-form .form-group, .sub-project-edit-form .form-group, .sub-project-task-edit-form .form-group, .sub-task-edit-form .form-group {
+  margin-bottom: 0.05rem !important;
+}
+.edit-form-common input, .edit-form-common textarea, .edit-form-common select,
+.task-edit-form input, .task-edit-form textarea, .task-edit-form select,
+.big-project-form input, .big-project-form textarea, .big-project-form select,
+.sub-project-form input, .sub-project-form textarea, .sub-project-form select,
+.sub-task-form input, .sub-task-form textarea, .sub-task-form select,
+.sub-project-edit-form input, .sub-project-edit-form textarea, .sub-project-edit-form select,
+.sub-project-task-edit-form input, .sub-project-task-edit-form textarea, .sub-project-task-edit-form select,
+.sub-task-edit-form input, .sub-task-edit-form textarea, .sub-task-edit-form select {
+  padding: 0.05rem !important;
+  font-size: 0.8rem !important;
+}
+.edit-form-common label, .task-edit-form label, .big-project-form label, .sub-project-form label, .sub-task-form label, .sub-project-edit-form label, .sub-project-task-edit-form label, .sub-task-edit-form label {
+  margin-bottom: 0.05rem !important;
+}
+
+.task-item:not(.edit-form-common) {
+  display: flex;
+  align-items: center;
+  width: 100% !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  padding: 0.3em 0.5em !important;
+  font-size: 0.6rem !important;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  border: 1px solid #e0e0e0;
+  margin-top: 0.5em;
+  margin-bottom: 0.2em !important;
+  gap: 1.2em;
+  justify-content: flex-start;
+}
+.task-header,
+.task-actions,
+.task-meta,
+.task-period,
+.task-status,
+.task-assignee,
+.task-description {
+  margin-right: 1em;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+}
+.task-item:not(.edit-form-common):hover,
+.task-item:not(.edit-form-common):hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+.progress-bar:not(.edit-form-common .progress-bar) {
+  height: 2px !important;
+}
+/* Make edit forms extremely compact vertically */
+.edit-form-common, .task-edit-form, .big-project-form, .sub-project-form, .sub-task-form, .sub-project-edit-form, .sub-project-task-edit-form, .sub-task-edit-form {
+  padding: 0.1rem !important;
+}
+.edit-form-common .form-group, .task-edit-form .form-group, .big-project-form .form-group, .sub-project-form .form-group, .sub-task-form .form-group, .sub-project-edit-form .form-group, .sub-project-task-edit-form .form-group, .sub-task-edit-form .form-group {
+  margin-bottom: 0.05rem !important;
+}
+.edit-form-common input, .edit-form-common textarea, .edit-form-common select,
+.task-edit-form input, .task-edit-form textarea, .task-edit-form select,
+.big-project-form input, .big-project-form textarea, .big-project-form select,
+.sub-project-form input, .sub-project-form textarea, .sub-project-form select,
+.sub-task-form input, .sub-task-form textarea, .sub-task-form select,
+.sub-project-edit-form input, .sub-project-edit-form textarea, .sub-project-edit-form select,
+.sub-project-task-edit-form input, .sub-project-task-edit-form textarea, .sub-project-task-edit-form select,
+.sub-task-edit-form input, .sub-task-edit-form textarea, .sub-task-edit-form select {
+  padding: 0.05rem !important;
+  font-size: 0.8rem !important;
+}
+.edit-form-common label, .task-edit-form label, .big-project-form label, .sub-project-form label, .sub-task-form label, .sub-project-edit-form label, .sub-project-task-edit-form label, .sub-task-edit-form label {
+  margin-bottom: 0.05rem !important;
+}
+
+.task-item:not(.edit-form-common) {
+  width: 320px;
+  min-height: unset;
+  padding: 0.1em 0.3em !important;
+  line-height: 1.1;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.task-item .task-header {
+  margin-bottom: 0.1em;
+}
+.task-item .task-meta {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+.project-item:not(.edit-form-common),
+.task-item:not(.edit-form-common) {
+  width: 100% !important;
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+.task-comment-section {
+  width: 100%;
+  max-width: none;
+  align-self: stretch;
+  margin-top: 0.5em;
+}
+.gantt-view, .gantt-container {
+  font-size: 0.8em;
+}
+.gantt-header-row, .gantt-task-row, .gantt-task-info, .gantt-month, .gantt-task-bar {
+  font-size: 0.6em !important;
+  min-height: 12px !important;
+  padding: 0.05em 0.1em !important;
+}
+.gantt-task-row {
+  min-height: 32px !important;
+  height: 36px !important;
+}
+.gantt-task-row button,
+.gantt-task-row select {
+  font-size: 0.6em !important;
+  padding: 0.1em 0.2em !important;
+  height: 18px !important;
+  min-width: 18px !important;
+}
+.gantt-task-info {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  line-height: 1;
+}
+.gantt-task-info button,
+.gantt-task-info select {
+  vertical-align: middle;
+  line-height: 1;
+  margin: 0 0.2em 0 0;
+  padding: 0.1em 0.2em;
+  height: 18px;
+  min-width: 18px;
+}
+.gantt-task-info h3, .gantt-task-info h5, .gantt-task-info span {
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+  vertical-align: middle;
+}
+.gantt-month {
+  padding: 0.1em 0.2em !important;
+}
+.gantt-timeline {
+  min-height: 18px !important;
+}
+svg text {
+  font-size: 10px !important;
+}
+
+.board-view .board-columns {
+  display: flex;
+  gap: 1.5em;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  justify-content: center;
+}
+.burnup-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.board-view .board-column {
+  flex: 1 1 0;
+  min-width: 320px;
+  max-width: 400px;
+  padding: 0.5em;
+  background: #f5f5f5;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.board-view .board-column > h3 {
+  text-align: center;
+  width: 100%;
+  font-size: 1.1em;
+  margin-bottom: 0.5em;
+}
+.board-view .board-task {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  border: 1px solid #e0e0e0;
+  margin-bottom: 1em;
+  padding: 0.5em 1em;
+  font-size: 1em;
+  min-height: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  max-width: 380px;
+  width: 100%;
+}
+
+.board-view .board-task h4,
+.board-view .board-task .task-title {
+  text-align: center;
+  width: 100%;
+  margin: 0.2em 0 0.4em 0;
+  font-size: 1.1em;
+  font-weight: bold;
+  white-space: normal;
+  overflow: visible;
+  text-overflow: unset;
+}
+.board-view .board-task .task-header {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 0.2em;
+}
+
+.board-view .board-task {
+  padding: 0.1em 0.5em;
+  min-height: 12px;
+  margin-bottom: 0.5em;
+  gap: 0.1em;
+}
+.board-view .board-task .task-header {
+  margin-bottom: 0.1em;
+}
+.board-view .board-task input,
+.board-view .board-task select,
+.board-view .board-task button {
+  padding: 0.05em 0.2em;
+  margin: 0.05em 0;
+  font-size: 1em;
+  height: 1.5em;
+  min-height: 1.5em;
+  line-height: 1.2;
+}
+.board-view .board-task .task-controls {
+  margin-bottom: 0.1em;
+  gap: 0.1em;
+}
+
+.board-view .board-task {
+  font-size: 0.85em;
+  padding: 0.05em 0.3em;
+  min-height: 8px;
+  gap: 0.05em;
+}
+
+.board-view .board-task h4,
+.board-view .board-task .task-title {
+  font-size: 1em;
+  margin: 0.1em 0 0.2em 0;
+}
+
+.board-view .board-task input,
+.board-view .board-task select,
+.board-view .board-task button {
+  font-size: 0.95em;
+  padding: 0.03em 0.15em;
+  margin: 0.03em 0;
+  height: 1.2em;
+  min-height: 1.2em;
+  line-height: 1.1;
+}
+
+.board-view .board-task .task-controls {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.2em;
+  margin-bottom: 0.05em;
+}
+
+.board-view .board-task .task-controls > * {
+  margin-right: 0.2em;
+  margin-bottom: 0 !important;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.3em 1.2em;
+  min-height: 44px;
+  height: auto;
+}
+.app-header h1 {
+  font-size: 2em;
+  margin: 0 1.2em 0 0;
+  line-height: 1;
+}
+.view-toggle {
+  display: flex;
+  flex-direction: row;
+  gap: 0.05em;
+  align-items: center;
+  flex-wrap: nowrap;
+  max-width: 100%;
+}
+
+.view-toggle .view-button,
+.view-toggle .add-button {
+  padding: 0.01em 0.18em;
+  font-size: 0.82em;
+  height: 1.1em;
+  min-height: 1.1em;
+  border-radius: 4px;
+  margin: 0 0.01em;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.account-section {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+.user-menu-simple {
+  font-size: 1em;
+  margin-left: 1em;
+}
+.logout-button {
+  background: #e53935;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.2em 1.2em;
+  font-size: 0.95em;
+  font-weight: bold;
+  min-width: 80px;
+  height: 2em;
+  min-height: 2em;
+  margin-left: 0.5em;
+  box-shadow: 0 1px 4px rgba(229,57,53,0.08);
+  transition: background 0.2s;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: visible;
+}
+.logout-button:hover, .logout-button:focus {
+  background: #b71c1c;
+  color: #fff;
+}
+.view-button, .add-button {
+  padding: 0.2em 0.8em;
+  font-size: 1em;
+  height: 2em;
+  min-height: 2em;
+}
+
+.board-view .board-task .task-controls {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center;
+  gap: 0.1em;
+  margin-bottom: 0.05em;
+}
+
+.board-view .board-task .task-controls button,
+.board-view .board-task .task-controls .edit-button,
+.board-view .board-task .task-controls .delete-button {
+  font-size: 0.9em !important;
+  width: 1.3em !important;
+  height: 1.3em !important;
+  min-width: 1.3em !important;
+  min-height: 1.3em !important;
+  padding: 0.05em 0.2em !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.board-view .board-task .task-controls i {
+  font-size: 1em;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+.view-toggle .view-button,
+.view-toggle .add-button {
+  padding: 0.1em 0.5em;
+  font-size: 0.95em;
+  height: 1.6em;
+  min-height: 1.6em;
+  border-radius: 6px;
+  margin: 0 0.1em;
+}
+
+.app-header > div {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.account-section,
+.user-menu-simple {
+  flex-shrink: 0;
+}
+
+.user-menu-simple, .user-email {
+  font-size: 0.75em;
+}
+
+.project-item {
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.progress-bar {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 1;
+  overflow: visible;
+}
+
+.progress-text {
+  overflow: visible;
+  white-space: nowrap;
+  text-overflow: unset;
+  flex-shrink: 1;
+}
+
+.edit-form-common,
+.task-edit-form,
+.project-form,
+.big-project-form,
+.sub-project-form,
+.sub-task-form,
+.sub-project-edit-form,
+.sub-project-task-edit-form {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 96vw;
+  max-width: 360px;
+  min-width: 220px;
+  margin: 0 !important;
+  padding: 1.1em 1em !important;
+  background: #fff;
+  z-index: 10000 !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.13);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: visible;
+  max-height: none;
+  height: auto;
+}
+.edit-form-common input,
+.edit-form-common textarea,
+.edit-form-common select,
+.edit-form-common button {
+  font-size: 1em !important;
+  padding: 0.5em 0.7em !important;
+  margin-bottom: 0.8em !important;
+  width: 100%;
+  max-width: 300px;
+  box-sizing: border-box;
+}
+.edit-form-common .form-group {
+  width: 100%;
+  max-width: 300px;
+  margin-bottom: 1em !important;
+}
+.edit-form-common .form-actions {
+  display: flex;
+  gap: 1em;
+  justify-content: center;
+  width: 100%;
+  max-width: 300px;
+}
+.edit-form-common .close-button {
+  position: absolute;
+  top: 0.7em;
+  right: 1em;
+  font-size: 1.3em;
+}
+.edit-form-common h2, .edit-form-common h3 {
+  font-size: 1.2em;
+  margin-bottom: 1em;
+}
+
+.big-project-form {
+  max-width: 220px !important;
+  min-width: 120px !important;
+  width: 88vw !important;
+  padding: 0.5em 0.3em !important;
+  border-radius: 8px !important;
+  font-size: 0.92em !important;
+}
+.big-project-form input,
+.big-project-form textarea,
+.big-project-form select,
+.big-project-form button {
+  font-size: 0.92em !important;
+  padding: 0.3em 0.4em !important;
+  margin-bottom: 0.5em !important;
+  width: 100%;
+  max-width: 160px;
+  box-sizing: border-box;
+}
+.big-project-form .form-group {
+  width: 100%;
+  max-width: 160px;
+  margin-bottom: 0.5em !important;
+}
+.big-project-form .form-actions {
+  display: flex;
+  gap: 0.5em;
+  justify-content: center;
+  width: 100%;
+  max-width: 160px;
+}
+.big-project-form .close-button {
+  top: 0.3em;
+  right: 0.5em;
+  font-size: 1em;
+}
+.big-project-form h2, .big-project-form h3 {
+  font-size: 1em;
+  margin-bottom: 0.5em;
+}
+
+:where(.edit-button), :where(.delete-button),
+:where(.board-view .board-task .task-controls .edit-button),
+:where(.board-view .board-task .task-controls .delete-button) {
+  font-size: 0.9em !important;
+  width: 1.3em !important;
+  height: 1.3em !important;
+  min-width: 1.3em !important;
+  min-height: 1.3em !important;
+  padding: 0.05em 0.2em !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.big-project-header {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  padding: 0.3em 0.5em;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  border: 1px solid #e0e0e0;
+  margin-bottom: 0.5em;
+}
+.big-project-title {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-right: 1em;
+  white-space: nowrap;
+}
+.big-project-actions {
+  display: flex;
+  gap: 0.5em;
+}
+.expand-subprojects-button {
+  margin-right: 0.5em;
+}
+
+.big-project-title-and-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.5em !important;
+}
+.big-project-title-actions {
+  display: flex !important;
+  gap: 0.2em !important;
+}
+
+</style>
+
+<!-- ログイン・新規登録フォームはmainタグの外でisAuthReady && !currentUserのときだけ表示 -->
+<div *ngIf="isAuthReady && !currentUser">
+  <div class="auth-modal" *ngIf="showLoginForm">
+    <!-- ログインフォーム -->
+    <div class="login-modal">
+      <div class="login-box">
+        <button class="close-button" type="button" (click)="showLoginForm = false">×</button>
+        <h2>ログイン</h2>
+        <p class="login-desc">メールアドレスとパスワードを入力してください。</p>
+        <form (ngSubmit)="login()" #loginFormRef="ngForm">
+          <div class="form-group">
+            <label for="email"><i class="material-icons">mail</i> メールアドレス</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              [(ngModel)]="loginForm.email"
+              required
+              autocomplete="username"
+              placeholder="例: user@example.com"
+            />
+          </div>
+          <div class="form-group">
+            <label for="password"><i class="material-icons">lock</i> パスワード</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              [(ngModel)]="loginForm.password"
+              required
+              autocomplete="current-password"
+              placeholder="6文字以上"
+            />
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                name="rememberMe"
+                [(ngModel)]="loginForm.rememberMe"
+              />
+              ログイン状態を保持
+            </label>
+          </div>
+          <div *ngIf="loginError" class="error-message">{{ loginError }}</div>
+          <div class="form-actions">
+            <button class="login-button" type="submit" [disabled]="loginFormRef.invalid">ログイン</button>
+            <button class="link-button" type="button" (click)="showRegister()">新規登録はこちら</button>
+          </div>
+          <hr class="form-divider" />
+          <div class="form-links">
+            <span>パスワードを忘れた場合は管理者にお問い合わせください。</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="auth-modal" *ngIf="showRegisterForm">
+    <!-- 新規登録フォーム -->
+    <div class="auth-form">
+      <button class="close-button" type="button" (click)="showRegisterForm = false">×</button>
+      <h2>新規アカウント登録</h2>
+      <p class="login-desc">メールアドレスとパスワードを入力してアカウントを作成してください。</p>
+      <form (ngSubmit)="register()" #registerFormRef="ngForm">
+        <div class="form-group">
+          <label for="register-email"><i class="material-icons">mail</i> メールアドレス</label>
+          <input
+            id="register-email"
+            name="email"
+            type="email"
+            [(ngModel)]="registerForm.email"
+            required
+            autocomplete="username"
+            placeholder="例: user@example.com"
+          />
+        </div>
+        <div class="form-group">
+          <label for="register-password"><i class="material-icons">lock</i> パスワード</label>
+          <input
+            id="register-password"
+            name="password"
+            type="password"
+            [(ngModel)]="registerForm.password"
+            required
+            autocomplete="new-password"
+            placeholder="6文字以上"
+          />
+        </div>
+        <div class="form-group">
+          <label for="register-confirm"><i class="material-icons">lock</i> パスワード（確認）</label>
+          <input
+            id="register-confirm"
+            name="confirmPassword"
+            type="password"
+            [(ngModel)]="registerForm.confirmPassword"
+            required
+            autocomplete="new-password"
+            placeholder="もう一度パスワードを入力"
+          />
+        </div>
+        <div *ngIf="registerError" class="error-message">{{ registerError }}</div>
+        <div class="form-actions">
+          <button class="register-button" type="submit" [disabled]="registerFormRef.invalid">登録</button>
+          <button class="link-button" type="button" (click)="showLogin()">ログインはこちら</button>
+        </div>
+        <hr class="form-divider" />
+        <div class="form-links">
+          <span>パスワードは6文字以上で設定してください。</span>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="auth-buttons" *ngIf="!showLoginForm && !showRegisterForm">
+    <button class="auth-button" (click)="showLogin()">
+      <i>🔑</i> ログイン
+    </button>
+    <button class="auth-button" (click)="showRegister()">
+      <i>📝</i> 新規登録
+    </button>
+  </div>
+</div>
+
+<!-- 完了日未入力時の警告モーダル -->
+<div class="modal-overlay" *ngIf="showCompleteDateWarning">
+  <div class="task-edit-form">
+    <h3>警告</h3>
+    <p>完了日に日付を入力してください。</p>
+    <div class="form-actions">
+      <button class="save-button" (click)="closeCompleteDateWarning()">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project create modal -->
+<div class="modal-overlay" *ngIf="showProjectForm">
+  <div class="project-form edit-form-common">
+    <button class="close-button" type="button" (click)="resetProjectForm()">×</button>
+    <div class="form-group">
+      <label>プロジェクト名 <span class="required">*</span></label>
+      <input type="text" id="newProject-name" name="name" [(ngModel)]="newProject.name" placeholder="プロジェクト名を入力">
+    </div>
+    <div class="form-group">
+      <label>説明</label>
+      <textarea id="newProject-description" name="description" [(ngModel)]="newProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+    </div>
+    <div class="form-group">
+      <label>期間 <span class="required">*</span></label>
+      <div class="datetime-range">
+        <div class="datetime-input">
+          <label class="sublabel">開始日 <span class="required">*</span></label>
+          <div class="inputs-wrapper">
+            <input type="date" id="newProject-startDate" name="startDate" [(ngModel)]="newProject.startDate" placeholder="開始日">
+          </div>
+        </div>
+        <div class="datetime-input">
+          <label class="sublabel">終了日 <span class="required">*</span></label>
+          <div class="inputs-wrapper">
+            <input type="date" id="newProject-endDate" name="endDate" [(ngModel)]="newProject.endDate" placeholder="終了日">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>カテゴリ</label>
+      <input type="text" id="newProject-category" name="category" [(ngModel)]="newProject.category" placeholder="カテゴリを入力">
+    </div>
+    <div class="form-group">
+      <label>担当者</label>
+      <input type="text" id="newProject-assignee" name="assignee" [(ngModel)]="newProject.assignee" placeholder="担当者を入力">
+    </div>
+    <div class="form-actions">
+      <button class="cancel-button" (click)="resetProjectForm()">キャンセル</button>
+      <button class="save-button" (click)="addProject()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Project edit modal -->
+<div class="modal-overlay" *ngIf="editingProject">
+  <div class="project-form edit-form-common">
+    <button class="close-button" type="button" (click)="cancelProjectEdit()">×</button>
+    <div class="form-group">
+      <label>プロジェクト名 <span class="required">*</span></label>
+      <input type="text" id="editingProject-name" name="name" [(ngModel)]="editingProject.name" placeholder="プロジェクト名を入力">
+    </div>
+    <div class="form-group">
+      <label>説明</label>
+      <textarea id="editingProject-description" name="description" [(ngModel)]="editingProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+    </div>
+    <div class="form-group">
+      <label>期間 <span class="required">*</span></label>
+      <div class="datetime-range">
+        <div class="datetime-input">
+          <label class="sublabel">開始日 <span class="required">*</span></label>
+          <div class="inputs-wrapper">
+            <input type="date" id="editingProject-startDate" name="startDate" [(ngModel)]="editingProject.startDate" placeholder="開始日">
+          </div>
+        </div>
+        <div class="datetime-input">
+          <label class="sublabel">終了日 <span class="required">*</span></label>
+          <div class="inputs-wrapper">
+            <input type="date" id="editingProject-endDate" name="endDate" [(ngModel)]="editingProject.endDate" placeholder="終了日">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>カテゴリ</label>
+      <input type="text" id="editingProject-category" name="category" [(ngModel)]="editingProject.category" placeholder="カテゴリを入力">
+    </div>
+    <div class="form-group">
+      <label>担当者</label>
+      <input type="text" id="editingProject-assignee" name="assignee" [(ngModel)]="editingProject.assignee" placeholder="担当者を入力">
+    </div>
+    <div class="form-actions">
+      <button class="cancel-button" (click)="cancelProjectEdit()">キャンセル</button>
+      <button class="save-button" (click)="saveProjectEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Task create modal -->
+<div *ngFor="let project of projects">
+  <div class="modal-overlay" *ngIf="project.id && projectTaskForms[project.id]">
+    <div class="task-form edit-form-common">
+      <button class="close-button" type="button" (click)="resetTaskForm(project.id)">×</button>
+      <div class="form-group">
+        <label>タスク名 <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="newTasks[project.id].title" placeholder="タスク名を入力">
+      </div>
+      <div class="form-group">
+        <label>説明</label>
+        <textarea [(ngModel)]="newTasks[project.id].description" placeholder="説明を入力"></textarea>
+      </div>
+      <div class="form-group">
+        <label>担当者</label>
+        <input type="text" [(ngModel)]="newTasks[project.id].assignee" placeholder="担当者を入力">
+      </div>
+      <div class="form-group">
+        <label>ステータス</label>
+        <select [(ngModel)]="newTasks[project.id].status">
+          <option value="not-started">未着手</option>
+          <option value="in-progress">進行中</option>
+          <option value="completed">完了</option>
+        </select>
+      </div>
+      <div class="form-group" *ngIf="newTasks[project.id].status === 'completed'">
+        <label>完了日</label>
+        <input type="date" [(ngModel)]="newTasks[project.id].completedDate" [max]="(newTasks[project.id].endDate || '')">
+      </div>
+      <div class="datetime-range">
+        <div class="datetime-input">
+          <label>開始日時 <span class="required">*</span></label>
+          <div class="inputs-wrapper">
+            <input type="date" [(ngModel)]="newTasks[project.id].startDate" [min]="project.startDate" [max]="project.endDate">
+          </div>
+        </div>
+        <div class="datetime-input">
+          <label>終了日時 <span class="required">*</span></label>
+          <div class="inputs-wrapper">
+            <input type="date" [(ngModel)]="newTasks[project.id].endDate" [min]="project.startDate" [max]="project.endDate">
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="cancel-button" (click)="resetTaskForm(project.id)">キャンセル</button>
+        <button class="save-button" (click)="createTask(project.id)">追加</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Subproject create modal -->
+<div *ngFor="let bigProject of bigProjects">
+  <div class="modal-overlay" *ngIf="showSubProjectForm[bigProject.id]">
+    <div class="sub-project-form edit-form-common">
+      <button class="close-button" type="button" (click)="resetSubProjectForm(bigProject.id)">×</button>
+      <div class="form-group">
+        <label>サブプロジェクト名 <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="newSubProject[bigProject.id].name" required>
+      </div>
+      <div class="form-group">
+        <label>説明</label>
+        <textarea [(ngModel)]="newSubProject[bigProject.id].description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>期間</label>
+        <div class="datetime-range">
+          <div class="datetime-input">
+            <label class="sublabel">開始日 <span class="required">*</span></label>
+            <input type="date" [(ngModel)]="newSubProject[bigProject.id].startDate">
+          </div>
+          <div class="datetime-input">
+            <label class="sublabel">終了日 <span class="required">*</span></label>
+            <input type="date" [(ngModel)]="newSubProject[bigProject.id].endDate">
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>担当者</label>
+        <input type="text" [(ngModel)]="newSubProject[bigProject.id].assignee">
+      </div>
+      <div class="form-actions">
+        <button class="save-button" (click)="createSubProject(bigProject.id)">作成</button>
+        <button class="cancel-button" (click)="resetSubProjectForm(bigProject.id)">キャンセル</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Subtask create modal -->
+<div *ngFor="let subProject of currentSubProjects">
+  <div class="modal-overlay" *ngIf="showSubTaskForm[subProject.id]">
+    <div class="sub-task-form edit-form-common">
+      <button class="close-button" type="button" (click)="resetSubTaskForm(subProject.id)">×</button>
+      <div class="form-group">
+        <label>タスク名 <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="newSubTask[subProject.id].title" required>
+      </div>
+      <div class="form-group">
+        <label>説明</label>
+        <textarea [(ngModel)]="newSubTask[subProject.id].description"></textarea>
+      </div>
+      <div class="form-group">
+        <label>担当者</label>
+        <input type="text" [(ngModel)]="newSubTask[subProject.id].assignee">
+      </div>
+      <div class="form-group">
+        <label>ステータス</label>
+        <select [(ngModel)]="newSubTask[subProject.id].status">
+          <option value="not-started">未着手</option>
+          <option value="in-progress">進行中</option>
+          <option value="completed">完了</option>
+        </select>
+      </div>
+      <div class="datetime-range">
+        <div class="datetime-input">
+          <label>開始日 <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="newSubTask[subProject.id].startDate" [min]="subProject.startDate" [max]="subProject.endDate">
+        </div>
+        <div class="datetime-input">
+          <label>終了日 <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="newSubTask[subProject.id].endDate" [min]="subProject.startDate" [max]="subProject.endDate">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="save-button" (click)="createSubTask(subProject.bigProjectId, subProject.id)">追加</button>
+        <button class="cancel-button" (click)="resetSubTaskForm(subProject.id)">キャンセル</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Big project create modal -->
+<div class="modal-overlay" *ngIf="showBigProjectCreateForm">
+  <div class="big-project-form edit-form-common">
+    <button class="close-button" type="button" (click)="resetBigProjectForm()">×</button>
+    <div class="form-group">
+      <label>プロジェクト名 <span class="required">*</span></label>
+      <input type="text" [(ngModel)]="newBigProject.name" placeholder="プロジェクト名を入力">
+    </div>
+    <div class="form-group">
+      <label>説明</label>
+      <textarea [(ngModel)]="newBigProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+    </div>
+    <div class="form-group">
+      <label>期間</label>
+      <div class="datetime-range">
+        <div class="datetime-input">
+          <label class="sublabel">開始日 <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="newBigProject.startDate">
+        </div>
+        <div class="datetime-input">
+          <label class="sublabel">終了日 <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="newBigProject.endDate">
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>ステータス</label>
+      <select [(ngModel)]="newBigProject.status">
+        <option value="not-started">未着手</option>
+        <option value="active">進行中</option>
+        <option value="completed">完了</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>カテゴリー</label>
+      <input type="text" [(ngModel)]="newBigProject.category" placeholder="カテゴリーを入力">
+    </div>
+    <div class="form-group">
+      <label>担当者</label>
+      <input type="text" [(ngModel)]="newBigProject.assignee" placeholder="担当者を入力">
+    </div>
+    <div class="form-actions">
+      <button class="cancel-button" (click)="resetBigProjectForm()">キャンセル</button>
+      <button class="save-button" (click)="addBigProject()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Big project edit modal -->
+<div class="modal-overlay" *ngIf="editingBigProject">
+  <div class="big-project-form edit-form-common">
+    <button class="close-button" type="button" (click)="cancelBigProjectEdit()">×</button>
+    <div class="form-group">
+      <label>プロジェクト名 <span class="required">*</span></label>
+      <input type="text" [(ngModel)]="editingBigProject.name" placeholder="ビッグプロジェクト名を入力">
+    </div>
+    <div class="form-group">
+      <label>説明</label>
+      <textarea [(ngModel)]="editingBigProject.description" placeholder="ビッグプロジェクトの説明を入力"></textarea>
+    </div>
+    <div class="form-group">
+      <label>期間</label>
+      <div class="datetime-range">
+        <div class="datetime-input">
+          <label class="sublabel">開始日 <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="editingBigProject.startDate">
+        </div>
+        <div class="datetime-input">
+          <label class="sublabel">終了日 <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="editingBigProject.endDate">
+        </div>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>ステータス</label>
+      <select [(ngModel)]="editingBigProject.status">
+        <option value="not-started">未着手</option>
+        <option value="active">進行中</option>
+        <option value="completed">完了</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>カテゴリー</label>
+      <input type="text" [(ngModel)]="editingBigProject.category" placeholder="カテゴリーを入力">
+    </div>
+    <div class="form-group">
+      <label>担当者</label>
+      <input type="text" [(ngModel)]="editingBigProject.assignee" placeholder="担当者を入力">
+    </div>
+    <div class="form-actions">
+      <button class="cancel-button" (click)="cancelBigProjectEdit()">キャンセル</button>
+      <button class="save-button" (click)="saveBigProjectEdit()">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- Subproject edit modal -->
+<div *ngFor="let bigProject of bigProjects">
+  <div *ngFor="let subProject of currentSubProjectsMap[bigProject.id] || []">
+    <div class="modal-overlay" *ngIf="expandedBigProjectIds.has(bigProject.id) && editingSubProject && editingSubProject.bigProjectId === bigProject.id && editingSubProject.subProject && editingSubProject.subProject.id === subProject.id">
+      <div class="sub-project-edit-form edit-form-common">
+        <button class="close-button" type="button" (click)="cancelSubProjectEdit()">×</button>
+        <div class="form-group">
+          <label>サブプロジェクト名 <span class="required">*</span></label>
+          <input type="text" [(ngModel)]="editingSubProject.subProject.name" required>
+        </div>
+        <div class="form-group">
+          <label>説明</label>
+          <textarea [(ngModel)]="editingSubProject.subProject.description"></textarea>
+        </div>
+        <div class="form-group">
+          <label>開始日 <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="editingSubProject.subProject.startDate">
+        </div>
+        <div class="form-group">
+          <label>終了日 <span class="required">*</span></label>
+          <input type="date" [(ngModel)]="editingSubProject.subProject.endDate">
+        </div>
+        <div class="form-group">
+          <label>担当者</label>
+          <input type="text" [(ngModel)]="editingSubProject.subProject.assignee">
+        </div>
+        <div class="form-actions">
+          <button class="save-button" (click)="saveSubProjectEdit()">保存</button>
+          <button class="cancel-button" (click)="cancelSubProjectEdit()">キャンセル</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Subtask edit modal -->
+<div *ngFor="let bigProject of bigProjects">
+  <div *ngFor="let subProject of bigProject.subProjects">
+    <div *ngFor="let task of subProject.tasks">
+      <div class="modal-overlay" *ngIf="editingSubTask && editingSubTask.bigProjectId === bigProject.id && editingSubTask.subProjectId === subProject.id && editingSubTask.subTask && editingSubTask.subTask.id === task.id">
+        <div class="task-edit-form edit-form-common">
+          <button class="close-button" type="button" (click)="cancelSubTaskEdit()">×</button>
+          <h3>タスクの編集</h3>
+          <div class="form-group">
+            <label>タスク名 <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editingSubTask.subTask.title" required>
+          </div>
+          <div class="form-group">
+            <label>説明</label>
+            <textarea [(ngModel)]="editingSubTask.subTask.description"></textarea>
+          </div>
+          <div class="form-group">
+            <label>担当者</label>
+            <input type="text" [(ngModel)]="editingSubTask.subTask.assignee">
+          </div>
+          <div class="form-group">
+            <label>ステータス</label>
+            <select [(ngModel)]="editingSubTask.subTask.status">
+              <option value="not-started">未着手</option>
+              <option value="in-progress">進行中</option>
+              <option value="completed">完了</option>
+            </select>
+          </div>
+          <div class="form-group" *ngIf="editingSubTask.subTask.status === 'completed'">
+            <label>完了日</label>
+            <input type="date" [(ngModel)]="editingSubTask.subTask.completedDate" [max]="editingSubTask.subTask.endDate || ''">
+          </div>
+          <div class="datetime-range">
+            <div class="datetime-input">
+              <label>開始日時 <span class="required">*</span></label>
+              <div class="inputs-wrapper">
+                <input type="date" [(ngModel)]="editingSubTask.subTask.startDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
+              </div>
+            </div>
+            <div class="datetime-input">
+              <label>終了日時 <span class="required">*</span></label>
+              <div class="inputs-wrapper">
+                <input type="date" [(ngModel)]="editingSubTask.subTask.endDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
+              </div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="cancel-button" (click)="cancelSubTaskEdit()">キャンセル</button>
+            <button class="save-button" (click)="saveSubTaskEdit()">保存</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 

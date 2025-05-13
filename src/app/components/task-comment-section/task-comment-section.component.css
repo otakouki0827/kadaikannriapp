@@ -1,0 +1,128 @@
+.comment-section {
+  margin-top: 0.5rem;
+  /* 背景や枠線は親の.task-itemに任せる */
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.97em;
+}
+
+.comment-form {
+  margin-bottom: 10px;
+}
+
+.comment-form textarea {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  padding: 4px 6px;
+  font-size: 1em;
+  resize: vertical;
+  min-height: 20px;
+  max-height: 28px;
+}
+
+.comment-form button {
+  margin-top: 4px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: none;
+  background: #1976d2;
+  color: #fff;
+  cursor: pointer;
+  font-size: 0.97em;
+}
+.comment-form button[disabled] {
+  background: #aaa;
+  cursor: not-allowed;
+}
+
+.reply-info {
+  margin: 2px 0 6px 0;
+  font-size: 0.93em;
+  color: #1976d2;
+}
+
+.comment-list {
+  margin-top: 4px;
+  max-height: 70px;
+  overflow-y: auto;
+}
+
+.comment-item {
+  border-left: 2px solid #e0e0e0;
+  padding-left: 6px;
+  margin-bottom: 4px;
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.comment-header {
+  font-size: 0.93em;
+  color: #555;
+  margin-bottom: 1px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comment-user {
+  font-weight: bold;
+  color: #1976d2;
+}
+
+.comment-date {
+  font-size: 0.88em;
+  color: #888;
+}
+
+.comment-header button {
+  background: none;
+  border: none;
+  color: #1976d2;
+  cursor: pointer;
+  font-size: 0.93em;
+  margin-left: 2px;
+  padding: 0 2px;
+}
+
+.comment-header button:hover {
+  text-decoration: underline;
+}
+
+.comment-content {
+  margin-bottom: 2px;
+  font-size: 0.98em;
+}
+
+.mention-suggestions {
+  background: #fff;
+  border: 1px solid #1976d2;
+  border-radius: 4px;
+  position: absolute;
+  z-index: 10;
+  max-height: 70px;
+  overflow-y: auto;
+  width: 90%;
+  min-width: 180px;
+  font-size: 0.97em;
+}
+.mention-suggestion-item {
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.mention-suggestion-item:hover {
+  background: #e3f2fd;
+}
+
+.history-toggle-btn {
+  margin-left: 0.5em;
+  font-size: 0.92em;
+  padding: 2px 8px;
+  border-radius: 4px;
+  border: 1px solid #1976d2;
+  background: #fff;
+  color: #1976d2;
+  cursor: pointer;
+} 

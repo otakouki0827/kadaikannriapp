@@ -1,0 +1,48 @@
+<div class="comment-section">
+  <h3>
+    コメント
+    <button (click)="toggleCommentHistory()" class="history-toggle-btn">
+      {{ showCommentHistory ? '履歴を閉じる' : '履歴を開く' }}
+    </button>
+  </h3>
+
+  <!-- コメント投稿フォーム -->
+  <div class="comment-form">
+    <textarea [(ngModel)]="newCommentContent" rows="3" placeholder="コメントを入力..." (input)="onCommentInput($event)" #commentTextarea></textarea>
+    <div *ngIf="showMentionSuggestions" class="mention-suggestions">
+      <div *ngFor="let email of mentionSuggestions" class="mention-suggestion-item" (mousedown)="selectMention(email, commentTextarea)">
+        <span>&#64;{{ email }}</span>
+      </div>
+    </div>
+    <div *ngIf="replyToComment" class="reply-info">
+      <span>返信先: {{ replyToComment.userName }}</span>
+      <button (click)="cancelReply()">返信キャンセル</button>
+    </div>
+    <button (click)="postComment()" [disabled]="!newCommentContent.trim()">投稿</button>
+  </div>
+
+  <!-- コメントリスト -->
+  <div class="comment-list" *ngIf="showCommentHistory">
+    <ng-container *ngFor="let comment of commentTree">
+      <ng-container *ngTemplateOutlet="commentThread; context: { $implicit: comment, level: 0 }"></ng-container>
+    </ng-container>
+  </div>
+
+  <!-- コメントスレッドの再帰テンプレート -->
+  <ng-template #commentThread let-comment let-level="level">
+    <div class="comment-item" [style.marginLeft.px]="level * 24">
+      <div class="comment-header">
+        <span class="comment-user">{{ comment.userName }}</span>
+        <span class="comment-date">{{ comment.createdAt | date:'yyyy/MM/dd HH:mm' }}</span>
+        <button *ngIf="comment.userId === currentUserId" (click)="deleteComment(comment)">削除</button>
+        <button (click)="setReplyTo(comment)">返信</button>
+      </div>
+      <div class="comment-content">{{ comment.content }}</div>
+      <div class="comment-replies">
+        <ng-container *ngFor="let reply of comment.replies">
+          <ng-container *ngTemplateOutlet="commentThread; context: { $implicit: reply, level: level + 1 }"></ng-container>
+        </ng-container>
+      </div>
+    </div>
+  </ng-template>
+</div> 
