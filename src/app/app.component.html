@@ -604,12 +604,12 @@
                   <div style="display: flex; flex-direction: column; align-items: flex-start; margin-right: 0.5em;">
                     <label style="font-size: 12px; margin-bottom: 2px;">完了日</label>
                     <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, getTaskProperty(task, 'projectId'))" style="width: 130px; margin-right: 0.5em;">
+                    <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))" style="margin-top: 0.2em; width: 130px;">
+                      <option value="not-started">未着手</option>
+                      <option value="in-progress">進行中</option>
+                      <option value="completed">完了</option>
+                    </select>
                   </div>
-                  <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))">
-                    <option value="not-started">未着手</option>
-                    <option value="in-progress">進行中</option>
-                    <option value="completed">完了</option>
-                  </select>
                   <!-- 削除ボタン削除 -->
                 </div>
                 <div class="task-assignee">{{ task.assignee }}</div>
@@ -640,12 +640,12 @@
                   <div style="display: flex; flex-direction: column; align-items: flex-start; margin-right: 0.5em;">
                     <label style="font-size: 12px; margin-bottom: 2px;">完了日</label>
                     <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, getTaskProperty(task, 'projectId'))" style="width: 130px; margin-right: 0.5em;">
+                    <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))" style="margin-top: 0.2em; width: 130px;">
+                      <option value="not-started">未着手</option>
+                      <option value="in-progress">進行中</option>
+                      <option value="completed">完了</option>
+                    </select>
                   </div>
-                  <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))">
-                    <option value="not-started">未着手</option>
-                    <option value="in-progress">進行中</option>
-                    <option value="completed">完了</option>
-                  </select>
                   <!-- 削除ボタン削除 -->
                 </div>
                 <div class="task-assignee">{{ task.assignee }}</div>
@@ -676,12 +676,12 @@
                   <div style="display: flex; flex-direction: column; align-items: flex-start; margin-right: 0.5em;">
                     <label style="font-size: 12px; margin-bottom: 2px;">完了日</label>
                     <input type="date" [(ngModel)]="task.completedDate" (change)="onTaskCompletedDateChange(task, getTaskProperty(task, 'projectId'))" style="width: 130px; margin-right: 0.5em;">
+                    <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))" style="margin-top: 0.2em; width: 130px;">
+                      <option value="not-started">未着手</option>
+                      <option value="in-progress">進行中</option>
+                      <option value="completed">完了</option>
+                    </select>
                   </div>
-                  <select [(ngModel)]="task.status" (ngModelChange)="onTaskStatusChange(task, getTaskProperty(task, 'projectId'))">
-                    <option value="not-started">未着手</option>
-                    <option value="in-progress">進行中</option>
-                    <option value="completed">完了</option>
-                  </select>
                   <!-- 削除ボタン削除 -->
                 </div>
                 <div class="task-assignee">{{ task.assignee }}</div>

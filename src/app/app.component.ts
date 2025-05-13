@@ -2760,9 +2760,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       const updateData = { ...task, completedDate: task.completedDate ?? null };
       this.projectService.updateSubTask(projectId, subProjectId, subTaskId, updateData)
         .then(() => {
-          this.subscribeSubTasks(projectId, subProjectId);
-          this.updateBigProjectProgress(projectId);
-          // ここでボードリスト再計算はしない
+          // すべての要素を新規ロード時と同じように再取得
+          this.reloadAllDataForBoard();
         })
         .catch(err => {
           alert('Firestoreへのサブタスク更新に失敗: ' + err.message);
@@ -3167,5 +3166,43 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       tasks = this.getProjectTasks(this.selectedProjectForBurnup.id!);
     }
     return tasks.filter(t => t.status === 'completed').length;
+  }
+
+  reloadAllDataForBoard() {
+    // プロジェクト・タスク・ビッグプロジェクト・サブプロジェクト・サブタスクを全て再購読
+    this.projects$ = this.projectService.getProjects();
+    this.projects$.subscribe(projects => {
+      this.projects = projects;
+      projects.forEach(project => {
+        if (project.id) {
+          this.subscribeTasks(project.id);
+        }
+      });
+      this.cdr.markForCheck();
+    });
+
+    this.bigProjects$ = this.projectService.getBigProjects();
+    this.bigProjects$.subscribe(bigProjects => {
+      this.bigProjects = bigProjects;
+      bigProjects.forEach(bp => {
+        this.projectService.getSubProjects(bp.id).subscribe(subProjects => {
+          const subProjectsWithParent = subProjects.map(sp => ({
+            ...sp,
+            bigProjectId: bp.id,
+            bigProjectName: bp.name
+          }));
+          this.currentSubProjectsMap[bp.id] = subProjectsWithParent;
+          // 全サブプロジェクトを集約
+          const allSubProjects: any[] = [];
+          Object.values(this.currentSubProjectsMap).forEach(list => allSubProjects.push(...list));
+          this.currentSubProjects = allSubProjects;
+          // サブプロジェクトごとにサブタスク購読
+          subProjectsWithParent.forEach((sp: any) => {
+            this.subscribeSubTasks(bp.id, sp.id);
+          });
+          this.cdr.markForCheck();
+        });
+      });
+    });
   }
 }

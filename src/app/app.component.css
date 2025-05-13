@@ -2116,46 +2116,56 @@
   /* サブタスク編集モーダルを大きくする */
   .task-edit-form.edit-form-common,
   .sub-task-edit-form.edit-form-common {
-    max-width: 340px !important;
-    min-width: 220px !important;
-    width: 88vw !important;
-    padding: 0.5em 0.3em !important;
-    border-radius: 8px !important;
-    font-size: 0.92em !important;
+    max-width: 640px !important;
+    min-width: 320px !important;
+    width: 99vw !important;
+    padding: 2em 1.5em !important;
+    border-radius: 12px !important;
+    font-size: 1.15em !important;
   }
 
-  /* タスク一覧の完了日inputとステータスselectの幅を統一 */
-  .task-item input[type="date"],
-  .task-item select {
-    width: 130px;
-    min-width: 130px;
-    max-width: 130px;
+  .sub-task-edit-form.edit-form-common .datetime-range {
+    display: block !important;
+    width: 50%;
+    max-width: 1000px;
+    min-width: 300px;
+    margin: 0.5em auto;
+  }
+
+  .sub-task-edit-form.edit-form-common .datetime-input {
+    display: block !important;
+    width: 100%;
+    margin-bottom: 1em;
+  }
+
+  .sub-task-edit-form.edit-form-common label,
+  .sub-task-edit-form.edit-form-common .form-group label {
+    display: block;
+    text-align: left;
+    margin-left: 0;
+    margin-right: 0;
+    width: 90%;
+    max-width: 1000px;
+    min-width: 300px;
+    margin: 0.5em auto 0.2em auto;
+    font-weight: 500;
+  }
+
+  .sub-task-edit-form.edit-form-common input,
+  .sub-task-edit-form.edit-form-common select,
+  .sub-task-edit-form.edit-form-common textarea {
+    width: 90%;
+    max-width: 1000px;
+    min-width: 300px;
+    margin: 0.2em auto 1em auto;
+    display: block;
     box-sizing: border-box;
   }
 
-  /* タスク一覧の完了日inputとステータスselectの高さを統一（強制） */
-  .task-item input[type="date"],
-  .task-item select {
-    height: 2.2em !important;
-    min-height: 2.2em !important;
-    line-height: 2.2em !important;
-    box-sizing: border-box;
-    vertical-align: middle;
-  }
-
-  /* ボードのタスクカード内のコントロールを下端に揃えに */
-  .board-task .task-controls {
-    display: flex !important;
-    align-items: flex-end !important;
-    gap: 0.2em;
-  }
-
-  .board-task .task-controls select,
-  .board-task .task-controls button {
-    margin-top: 0.4em;
-  }
-
-  /* バーンアップチャートの青いチップにカーソルを合わせたときのツールチップ */
-  .burnup-chip {
-    cursor: pointer;
+  .sub-task-edit-form.edit-form-common input[type="date"] {
+    width: 90% !important;
+    max-width: 1000px !important;
+    min-width: 300px !important;
+    margin: 0.2em auto 1em auto !important;
+    box-sizing: border-box !important;
   }
