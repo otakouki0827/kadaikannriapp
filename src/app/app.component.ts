@@ -115,9 +115,7 @@ interface SubProjectTask {
   description?: string;
   status: 'not-started' | 'in-progress' | 'completed';
   startDate?: string;
-  startTime?: string;
   endDate?: string;
-  endTime?: string;
   assignee?: string;
   completedDate?: string;
 }
@@ -286,19 +284,19 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     this.tryUpdateBarChartContainerWidthWithRetry();
+    this.cdr.detectChanges();
   }
 
   private tryUpdateBarChartContainerWidthWithRetry(retryCount: number = 0) {
     setTimeout(() => {
       if (this.barChartContainerRef && this.barChartContainerRef.nativeElement) {
         const width = this.barChartContainerRef.nativeElement.clientWidth || 0;
-        if (width < 100 && retryCount < 10) {
-          // 100px未満なら最大10回までリトライ（50ms間隔）
+        if (width < 100 && retryCount < 20) { // リトライ回数を増やす
           this.tryUpdateBarChartContainerWidthWithRetry(retryCount + 1);
           return;
         }
         this.barChartContainerWidth = width || 340;
-        this.cdr.markForCheck();
+        this.cdr.detectChanges(); // markForCheck()ではなくdetectChanges()
       }
     }, 50);
   }
@@ -451,9 +449,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       description: '',
       status: 'not-started',
       startDate: '',
-      startTime: '09:00',
-      endDate: '',
-      endTime: '17:30'
+      endDate: ''
     };
   }
 
@@ -569,26 +565,31 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   addProject() {
-    if (!this.newProject.name || !this.newProject.startDate || !this.newProject.endDate) {
+    // name, startDate, endDateがnull/undefined/空文字/空白のみ ならエラー
+    const name = (this.newProject.name ?? '').trim();
+    const startDate = (this.newProject.startDate ?? '').trim();
+    const endDate = (this.newProject.endDate ?? '').trim();
+
+    if (!name || !startDate || !endDate) {
       alert('プロジェクト名と期間は必須です');
       return;
     }
     // 開始日と終了日のバリデーション
-    const projectStart = new Date(this.newProject.startDate);
-    const projectEnd = new Date(this.newProject.endDate);
+    const projectStart = new Date(startDate);
+    const projectEnd = new Date(endDate);
     if (projectEnd < projectStart) {
       alert('終了日は開始日より後に設定してください');
       return;
     }
 
     // idを完全に排除し、Project型のid?: stringにのみ依存する
-    const { name, description, startDate, startTime, endDate, endTime, category, tags } = this.newProject;
+    const { description, startTime, endTime, category, tags } = this.newProject;
     const project: Project = {
-      name: name!,
+      name: name,
       description: description || '',
-      startDate: startDate!,
+      startDate: startDate,
       startTime: startTime || '09:00',
-      endDate: endDate!,
+      endDate: endDate,
       endTime: endTime || '17:30',
       category: category || '',
       tags: tags || [],
@@ -738,10 +739,24 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateProjectProgress(projectId: string) {
+    // プロジェクト直下のタスク
     const tasks = this.projectTasks[projectId!] || [];
-    const completedTasks = tasks.filter(task => task.status === 'completed').length;
-    const progress = tasks.length === 0 ? 0 : 
-      Math.round((completedTasks / tasks.length) * 100);
+
+    // サブプロジェクト配下のサブタスクも集計
+    const subProjectTasks = this.currentSubProjects
+      .filter(sp => sp.bigProjectId === projectId)
+      .flatMap(sp => {
+        // サブプロジェクト直下のタスク
+        const directTasks = sp.tasks || [];
+        // Firestoreサブタスク
+        const firestoreTasks = this.currentSubTasksMap[sp.id] || [];
+        return [...directTasks, ...firestoreTasks];
+      });
+
+    // 全タスクを合算
+    const allTasks = [...tasks, ...subProjectTasks];
+    const completedTasks = allTasks.filter(task => task.status === 'completed').length;
+    const progress = allTasks.length === 0 ? 0 : Math.round((completedTasks / allTasks.length) * 100);
 
     this.projects = this.projects.map(project => 
       project.id === projectId 
@@ -1274,6 +1289,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   editBigProject(bigProject: BigProject) {
     this.editingBigProject = { ...bigProject };
+    // this.currentView = 'bigProject'; // ビューを切り替え ← 削除
     this.cdr.markForCheck();
   }
 
@@ -1293,6 +1309,18 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         if (this.selectedBigProject?.id === this.editingBigProject!.id) {
           this.selectedBigProject = { ...this.editingBigProject! };
         }
+        // 検索結果も即時反映
+        this.searchResults = this.searchResults.map(r =>
+          r.id === this.editingBigProject!.id
+            ? {
+                ...r,
+                title: this.editingBigProject!.name,
+                description: this.editingBigProject!.description,
+                dates: this.calculateBigProjectDuration(this.editingBigProject!),
+                status: this.editingBigProject!.status
+              }
+            : r
+        );
         this.editingBigProject = null;
         this.cdr.markForCheck();
       })
@@ -1320,14 +1348,9 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   showSubProjectCreateForm(bigProjectId: string | undefined) {
     if (!bigProjectId) return;
-
-    if (!this.showSubProjectForm[bigProjectId]) {
-      this.showSubProjectForm[bigProjectId] = true;
-    }
-
-    if (!this.newSubProject[bigProjectId]) {
-      this.newSubProject[bigProjectId] = this.getEmptySubProject();
-    }
+    this.showSubProjectForm[bigProjectId] = true;
+    // 必ず初期化する（既存の値を消す）
+    this.newSubProject[bigProjectId] = this.getEmptySubProject();
   }
 
   createSubProject(bigProjectId: string) {
@@ -1381,7 +1404,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       .then(() => {
         this.resetSubProjectForm(bigProjectId);
         this.cdr.markForCheck();
-        alert('サブプロジェクトをFirestoreに追加しました');
+        // 通知(alert)は表示しない
       })
       .catch(err => {
         alert('Firestoreへのサブプロジェクト追加に失敗: ' + err.message);
@@ -1456,9 +1479,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       description: task.description,
       status: 'not-started',
       startDate: task.startDate,
-      startTime: task.startTime,
       endDate: task.endDate,
-      endTime: task.endTime,
       assignee: task.assignee
     };
 
@@ -1514,10 +1535,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.projectService.deleteSubTask(bigProjectId, subProjectId, taskId)
       .then(() => {
         alert('サブタスクを削除しました');
-        // 即時UIから除去
-        if (this.currentSubTasksMap[subProjectId]) {
-          this.currentSubTasksMap[subProjectId] = this.currentSubTasksMap[subProjectId].filter(t => t.id !== taskId);
-        }
+        // filter処理は不要（Firestore購読でUIが更新される）
         this.ganttTasks = this.ganttTasks.filter(t => t.id !== taskId);
         this.subscribeSubTasks(bigProjectId, subProjectId);
         this.updateBigProjectProgress(bigProjectId);
@@ -1536,16 +1554,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   calculateSubProjectTaskDuration(task: SubProjectTask | undefined): string {
     if (!task?.startDate || !task?.endDate) return '';
 
-    const start = new Date(`${task.startDate}T${task.startTime || '00:00'}`);
-    const end = new Date(`${task.endDate}T${task.endTime || '00:00'}`);
+    const start = new Date(task.startDate);
+    const end = new Date(task.endDate);
     
     const days = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    const hours = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60));
-    
-    const startStr = `${task.startDate} ${task.startTime || '00:00'}`;
-    const endStr = `${task.endDate} ${task.endTime || '00:00'}`;
-    const rangeStr = `${startStr} ～ ${endStr}`;
-    const durationStr = days > 1 ? `${days}日間` : `${hours}時間`;
+    const rangeStr = `${task.startDate} ～ ${task.endDate}`;
+    const durationStr = days > 1 ? `${days}日間` : '1日';
     return `${rangeStr}（${durationStr}）`;
   }
 
@@ -1598,7 +1612,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   // サブプロジェクトの編集メソッド
   editSubProject(bigProjectId: string | undefined, subProject: SubProject | undefined) {
     if (!bigProjectId || !subProject) return;
-    this.expandedBigProjectIds.add(bigProjectId); // 追加
+    // this.currentView = 'bigProject'; // ビューを切り替え ← 削除
+    this.expandedBigProjectIds.add(bigProjectId); // 展開
     this.editingSubProject = {
       bigProjectId,
       subProject: { ...subProject }
@@ -1654,6 +1669,17 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     // Firestoreに反映
     this.projectService.updateSubProject(bigProjectId, editingSubProject.id, editingSubProject)
       .then(() => {
+        // 検索結果も即時反映
+        this.searchResults = this.searchResults.map(r =>
+          r.id === editingSubProject.id
+            ? {
+                ...r,
+                title: editingSubProject.name,
+                description: editingSubProject.description,
+                dates: this.calculateSubProjectDuration(editingSubProject)
+              }
+            : r
+        );
         this.editingSubProject = null;
         this.cdr.markForCheck();
       })
@@ -1670,12 +1696,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     task: SubProjectTask
   ) {
     if (!bigProjectId || !subProjectId || !task) return;
-
+    // this.currentView = 'bigProject'; // ビューを切り替え ← 削除
+    this.expandedBigProjectIds.add(bigProjectId); // 展開
     this.editingSubProjectTask = {
       bigProjectId,
       subProjectId,
       task: { ...task }
     };
+    this.editingSubTask = { bigProjectId, subProjectId, subTask: { ...task } };
+    this.cdr.markForCheck();
   }
 
   cancelSubProjectTaskEdit() {
@@ -1852,10 +1881,18 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   // プロジェクトの進捗率を取得
   getProjectProgress(projectId: string): number {
-    const total = this.getTotalTaskCount(projectId);
-    if (total === 0) return 0;
-    const completed = this.getCompletedTaskCount(projectId);
-    return Math.round((completed / total) * 100);
+    const tasks = this.projectTasks[projectId!] || [];
+    const subProjectTasks = this.currentSubProjects
+      .filter(sp => sp.bigProjectId === projectId)
+      .flatMap(sp => {
+        const directTasks = sp.tasks || [];
+        const firestoreTasks = this.currentSubTasksMap[sp.id] || [];
+        return [...directTasks, ...firestoreTasks];
+      });
+    const allTasks = [...tasks, ...subProjectTasks];
+    if (allTasks.length === 0) return 0;
+    const completed = allTasks.filter(t => t.status === 'completed').length;
+    return Math.round((completed / allTasks.length) * 100);
   }
 
   // プロジェクトの総タスク数を取得
@@ -2030,63 +2067,62 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // サブプロジェクトとそのタスクの検索
     if (this.searchFilters.subProjects) {
-      this.bigProjects.forEach(bigProject => {
-        this.currentSubProjects.forEach(subProject => {
-          if (this.matchesSearch(subProject.name, subProject.description, query, subProject.assignee, subProject.category)) {
-            results.push({
-              id: subProject.id,
-              title: subProject.name,
-              description: subProject.description,
-              type: 'subProject',
-              typeLabel: 'サブプロジェクト',
-              parent: bigProject.name,
-              dates: this.calculateSubProjectDuration(subProject),
-              bigProjectId: bigProject.id
-            });
-          }
-
-          // サブプロジェクトのタスクも検索
-          subProject.tasks.forEach((task: SubProjectTask) => {
-            if (this.matchesSearch(task.title, task.description, query, task.assignee, (task as any).category ?? undefined)) {
-              results.push({
-                id: task.id,
-                title: task.title,
-                description: task.description,
-                type: 'subTask',
-                typeLabel: 'サブタスク',
-                parent: `${bigProject.name} > ${subProject.name}`,
-                dates: this.calculateSubProjectTaskDuration(task),
-                status: task.status,
-                bigProjectId: bigProject.id,
-                subProjectId: subProject.id
-              });
-            }
+      this.currentSubProjects.forEach(subProject => {
+        const parentBigProject = this.bigProjects.find(bp => bp.id === subProject.bigProjectId);
+        if (parentBigProject && this.matchesSearch(subProject.name, subProject.description, query, subProject.assignee, subProject.category)) {
+          results.push({
+            id: subProject.id,
+            title: subProject.name,
+            description: subProject.description,
+            type: 'subProject',
+            typeLabel: 'サブプロジェクト',
+            parent: parentBigProject.name,
+            dates: this.calculateSubProjectDuration(subProject),
+            bigProjectId: parentBigProject.id
           });
-        });
+        }
       });
     }
 
-    // サブタスク（currentSubTasksMap）だけの検索
+    // サブプロジェクトのタスク（サブタスク）の検索（親子関係を厳密に）
     if (this.searchFilters.subTasks) {
-      this.bigProjects.forEach(bigProject => {
-        this.currentSubProjects.forEach(subProject => {
-          const subTasks = this.currentSubTasksMap[subProject.id] || [];
-          subTasks.forEach((task: SubProjectTask) => {
-            if (this.matchesSearch(task.title, task.description, query, task.assignee, (task as any).category ?? undefined)) {
-              results.push({
-                id: task.id,
-                title: task.title,
-                description: task.description,
-                type: 'subTask',
-                typeLabel: 'サブタスク',
-                parent: `${bigProject.name} > ${subProject.name}`,
-                dates: this.calculateSubProjectTaskDuration(task),
-                status: task.status,
-                bigProjectId: bigProject.id,
-                subProjectId: subProject.id
-              });
-            }
-          });
+      this.currentSubProjects.forEach(subProject => {
+        const parentBigProject = this.bigProjects.find(bp => bp.id === subProject.bigProjectId);
+        if (!parentBigProject) return;
+        // サブプロジェクト直下のタスク
+        subProject.tasks.forEach((task: SubProjectTask) => {
+          if (this.matchesSearch(task.title, task.description, query, task.assignee, (task as any).category ?? undefined)) {
+            results.push({
+              id: task.id,
+              title: task.title,
+              description: task.description,
+              type: 'subTask',
+              typeLabel: 'サブタスク',
+              parent: `${parentBigProject.name} > ${subProject.name}`,
+              dates: this.calculateSubProjectTaskDuration(task),
+              status: task.status,
+              bigProjectId: parentBigProject.id,
+              subProjectId: subProject.id
+            });
+          }
+        });
+        // currentSubTasksMapのサブタスク
+        const subTasks = this.currentSubTasksMap[subProject.id] || [];
+        subTasks.forEach((task: SubProjectTask) => {
+          if (this.matchesSearch(task.title, task.description, query, task.assignee, (task as any).category ?? undefined)) {
+            results.push({
+              id: task.id,
+              title: task.title,
+              description: task.description,
+              type: 'subTask',
+              typeLabel: 'サブタスク',
+              parent: `${parentBigProject.name} > ${subProject.name}`,
+              dates: this.calculateSubProjectTaskDuration(task),
+              status: task.status,
+              bigProjectId: parentBigProject.id,
+              subProjectId: subProject.id
+            });
+          }
         });
       });
     }
@@ -2127,97 +2163,168 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     return statusMap[status] || status;
   }
 
-  navigateToResult(result: SearchResult) {
-    switch (result.type) {
-      case 'project':
-        this.currentView = 'list';
-        this.activePanel = 'projects';
-        const project = this.projects.find(p => p.id === result.id);
-        if (project) {
-          this.selectProject(project);
-        }
-        break;
-      
-      case 'task':
-        this.currentView = 'list';
-        this.activePanel = 'tasks';
-        break;
-      
-      case 'bigProject':
-        this.currentView = 'bigProject';
-        const bigProject = this.bigProjects.find(bp => bp.id === result.id);
-        if (bigProject) {
-          this.selectBigProject(bigProject);
-        }
-        break;
-      
-      case 'subProject':
-        if (result.bigProjectId) {
-          const bp = this.bigProjects.find(bp => bp.id === result.bigProjectId);
-          const subProject = (bp?.subProjects ?? []).find(sp => sp.id === result.id);
-          if (bp && subProject) {
-            this.editSubProject(bp.id, subProject);
-          }
-        }
-        break;
-      case 'subTask':
-        if (result.bigProjectId && result.subProjectId) {
-          const bp = this.bigProjects.find(bp => bp.id === result.bigProjectId);
-          const sp = (bp?.subProjects ?? []).find(sp => sp.id === result.subProjectId);
-          const task = sp?.tasks.find((t: SubProjectTask) => t.id === result.id);
-          if (task) {
-            this.editSubProjectTask(result.bigProjectId, result.subProjectId, task);
-          }
-        }
-        break;
-    }
-    this.cdr.markForCheck();
-  }
-
   editSearchResult(result: SearchResult) {
     switch (result.type) {
-      case 'project':
+      case 'project': {
         const project = this.projects.find(p => p.id === result.id);
         if (project) {
           this.editProject(project);
+          // 編集保存後にsearchResultsも更新する
+          const originalSave = this.saveProjectEdit.bind(this);
+          this.saveProjectEdit = () => {
+            originalSave();
+            // プロジェクト情報をsearchResultsに反映
+            const updated = this.projects.find(p => p.id === result.id);
+            if (updated) {
+              this.searchResults = this.searchResults.map(r => r.id === result.id ? { ...r, title: updated.name, description: updated.description, dates: this.calculateProjectDuration(updated), status: String(updated.progress) + '%' } : r);
+              this.cdr.markForCheck();
+            }
+            // 元に戻す
+            this.saveProjectEdit = originalSave;
+          };
         }
         break;
-      
-      case 'task':
+      }
+      case 'task': {
         if (result.projectId) {
           const tasks = this.projectTasks[result.projectId];
           const task = tasks?.find(t => t.id === result.id);
           if (task) {
             this.editTask(task, result.projectId);
+            const originalSave = this.saveTaskEdit.bind(this);
+            this.saveTaskEdit = () => {
+              originalSave();
+              // タスク情報をsearchResultsに反映
+              const updated = (this.projectTasks[result.projectId as string] || []).find((t: Task) => t.id === result.id);
+              if (updated) {
+                this.searchResults = this.searchResults.map(r => r.id === result.id ? { ...r, title: updated.title, description: updated.description, dates: this.calculateTaskDuration(updated), status: updated.status } : r);
+                this.cdr.markForCheck();
+              }
+              this.saveTaskEdit = originalSave;
+            };
           }
         }
         break;
-      
-      case 'bigProject':
-        const bigProject = this.bigProjects.find(bp => bp.id === result.id);
+      }
+      case 'bigProject': {
+        // デバッグ用: IDリスト出力
+        console.log('bigProjects:', this.bigProjects.map(bp => bp.id));
+        console.log('result:', result);
+        // bigProjectId優先で検索
+        let bigProject = this.bigProjects.find(bp => String(bp.id) === String(result.bigProjectId || result.id));
+        if (!bigProject && this.bigProjects.length > 0) {
+          // 一致しない場合は最初の要素を仮で使う
+          bigProject = this.bigProjects[0];
+        }
         if (bigProject) {
           this.editBigProject(bigProject);
+          const originalSave = this.saveBigProjectEdit.bind(this);
+          this.saveBigProjectEdit = () => {
+            originalSave();
+            const updated = this.bigProjects.find(bp => String(bp.id) === String(result.bigProjectId || result.id)) || this.bigProjects[0];
+            if (updated) {
+              this.searchResults = this.searchResults.map(r => r.id === result.id ? { ...r, title: updated.name, description: updated.description, dates: this.calculateBigProjectDuration(updated), status: updated.status } : r);
+              this.cdr.markForCheck();
+            }
+            this.saveBigProjectEdit = originalSave;
+          };
         }
         break;
-      
-      case 'subProject':
+      }
+      case 'subProject': {
         if (result.bigProjectId) {
-          const bp = this.bigProjects.find(bp => bp.id === result.bigProjectId);
-          const subProject = (bp?.subProjects ?? []).find(sp => sp.id === result.id);
-          if (bp && subProject) {
-            this.editSubProject(bp.id, subProject);
+          // currentSubProjectsMapからサブプロジェクトを探す
+          const subProject = (this.currentSubProjectsMap[result.bigProjectId] || []).find(sp => sp.id === result.id);
+          if (subProject) {
+            this.editSubProject(result.bigProjectId, subProject);
+            const originalSave = this.saveSubProjectEdit.bind(this);
+            this.saveSubProjectEdit = () => {
+              originalSave();
+              // サブプロジェクト情報をsearchResultsに反映
+              const updatedBP = this.bigProjects.find(b => b.id === result.bigProjectId);
+              const updatedSP = (updatedBP?.subProjects ?? []).find(sp => sp.id === result.id);
+              if (updatedSP) {
+                this.searchResults = this.searchResults.map(r => r.id === result.id ? { ...r, title: updatedSP.name, description: updatedSP.description, dates: this.calculateSubProjectDuration(updatedSP) } : r);
+                this.cdr.markForCheck();
+              }
+              this.saveSubProjectEdit = originalSave;
+            };
           }
         }
         break;
-      
-      case 'subTask':
+      }
+      case 'subTask': {
         if (result.bigProjectId && result.subProjectId) {
-          const bp = this.bigProjects.find(bp => bp.id === result.bigProjectId);
-          const sp = (bp?.subProjects ?? []).find(sp => sp.id === result.subProjectId);
-          const task = sp?.tasks.find((t: SubProjectTask) => t.id === result.id);
+          const subProjectId: string = String(result.subProjectId);
+          const tasks: SubProjectTask[] = (this.currentSubTasksMap && this.currentSubTasksMap[subProjectId]) ? this.currentSubTasksMap[subProjectId] : [];
+          const task = tasks.find((t: SubProjectTask) => t.id === result.id);
           if (task) {
-            this.editSubProjectTask(result.bigProjectId, result.subProjectId, task);
+            // グローバルモーダル用変数にセット
+            this.globalEditingSubTask = { bigProjectId: result.bigProjectId, subProjectId: subProjectId, subTask: { ...task } };
+            const originalSave = this.saveSubTaskEdit.bind(this);
+            this.saveSubTaskEdit = () => {
+              originalSave();
+              // サブタスク情報をsearchResultsに反映
+              const updatedTask = tasks.find((t: SubProjectTask) => t.id === result.id);
+              if (updatedTask) {
+                this.searchResults = this.searchResults.map(r => r.id === result.id ? { ...r, title: updatedTask.title, description: updatedTask.description, dates: this.calculateSubProjectTaskDuration(updatedTask), status: updatedTask.status } : r);
+                this.cdr.markForCheck();
+              }
+              this.saveSubTaskEdit = originalSave;
+              this.globalEditingSubTask = null;
+            };
           }
+        }
+        break;
+      }
+    }
+  }
+
+  deleteSearchResult(result: SearchResult) {
+    switch (result.type) {
+      case 'project':
+        if (confirm('このプロジェクトを削除してもよろしいですか？')) {
+          this.projectService.deleteProject(result.id)
+            .then(() => {
+              this.searchResults = this.searchResults.filter(r => r.id !== result.id);
+              this.cdr.markForCheck();
+            });
+        }
+        break;
+      case 'task':
+        if (result.projectId && confirm('このタスクを削除してもよろしいですか？')) {
+          this.projectService.deleteTask(result.id)
+            .then(() => {
+              this.searchResults = this.searchResults.filter(r => r.id !== result.id);
+              this.cdr.markForCheck();
+            });
+        }
+        break;
+      case 'bigProject':
+        if (confirm('このビッグプロジェクトを削除してもよろしいですか？')) {
+          this.projectService.deleteBigProject(result.id)
+            .then(() => {
+              this.searchResults = this.searchResults.filter(r => r.id !== result.id);
+              this.cdr.markForCheck();
+            });
+        }
+        break;
+      case 'subProject':
+        if (result.bigProjectId && confirm('このサブプロジェクトを削除してもよろしいですか？')) {
+          this.projectService.deleteSubProject(result.bigProjectId, result.id)
+            .then(() => {
+              this.searchResults = this.searchResults.filter(r => r.id !== result.id);
+              this.cdr.markForCheck();
+            });
+        }
+        break;
+      case 'subTask':
+        if (result.bigProjectId && result.subProjectId && confirm('このサブタスクを削除してもよろしいですか？')) {
+          this.projectService.deleteSubTask(result.bigProjectId, result.subProjectId, result.id)
+            .then(() => {
+              this.searchResults = this.searchResults.filter(r => r.id !== result.id);
+              this.cdr.markForCheck();
+            });
         }
         break;
     }
@@ -2452,10 +2559,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.projectService.updateProject(id, data);
   }
 
-  deleteProjectFirestore(id: string) {
-    this.projectService.deleteProject(id);
-  }
-
   // Firestoreのtasksコレクションを購読しprojectTasksを更新
   subscribeTasks(projectId: string) {
     // 既存の購読があれば解除
@@ -2499,6 +2602,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.selectedProjectForBurnup = selected;
     this.updateProjectBurnup(this.selectedProjectForBurnup);
+    this.tryUpdateBarChartContainerWidthWithRetry();
+    this.cdr.detectChanges();
   }
 
   addSubProjectToBigProject(bigProjectId: string, subProjectData: any) {
@@ -2545,10 +2650,13 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       this.subTasksSubscriptions[subProjectId].unsubscribe();
     }
     this.subTasksSubscriptions[subProjectId] = this.projectService.getSubTasks(bigProjectId, subProjectId).subscribe(subTasks => {
-      this.currentSubTasksMap[subProjectId] = subTasks.map(t => ({
-        ...t,
-        subProjectId
-      }));
+      // IDが空のものは除外
+      this.currentSubTasksMap[subProjectId] = subTasks
+        .filter(t => t.id && t.id !== '')
+        .map(t => ({
+          ...t,
+          subProjectId
+        }));
       // ボードリスト再計算
       this.boardTasksNotStarted = this.getAllTasksByStatus('not-started');
       this.boardTasksInProgress = this.getAllTasksByStatus('in-progress');
@@ -2579,6 +2687,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   createSubTask(bigProjectId: string, subProjectId: string) {
     const task = this.newSubTask[subProjectId];
+    // デバッグ用ログ
+    console.log('createSubTask', { bigProjectId, subProjectId, task });
     if (!task.title) {
       alert('タスク名は必須です');
       return;
@@ -2607,7 +2717,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       })
       .catch(err => {
         alert('Firestoreへのサブタスク追加に失敗: ' + err.message);
-        console.error(err);
+        console.error('Firestore addSubTask error:', err);
       });
   }
 
@@ -2618,8 +2728,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   saveSubTaskEdit() {
-    if (!this.editingSubTask) return;
-    const { bigProjectId, subProjectId, subTask } = this.editingSubTask;
+    if (!this.editingSubTask && !this.globalEditingSubTask) return;
+    // どちらかを使う
+    const editing = this.globalEditingSubTask || this.editingSubTask;
+    if (!editing) return;
+    const { bigProjectId, subProjectId, subTask } = editing;
 
     // 必須項目チェック
     if (!subTask.title) {
@@ -2650,11 +2763,23 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         this.subscribeSubTasks(bigProjectId, subProjectId);
         // 編集状態を解除
         this.editingSubTask = null;
+        this.globalEditingSubTask = null;
         // ボード用リストも再計算
         this.boardTasksNotStarted = this.getAllTasksByStatus('not-started');
         this.boardTasksInProgress = this.getAllTasksByStatus('in-progress');
         this.boardTasksCompleted = this.getAllTasksByStatus('completed');
-        // 強制的に変更検知
+        // 検索結果も即時反映
+        this.searchResults = this.searchResults.map(r =>
+          r.id === subTask.id
+            ? {
+                ...r,
+                title: subTask.title,
+                description: subTask.description,
+                dates: this.calculateSubProjectTaskDuration(subTask),
+                status: subTask.status
+              }
+            : r
+        );
         this.cdr.detectChanges();
       })
       .catch(err => {
@@ -2665,6 +2790,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
   cancelSubTaskEdit() {
     this.editingSubTask = null;
+    this.globalEditingSubTask = null;
     this.cdr.markForCheck();
   }
 
@@ -2674,10 +2800,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     this.projectService.deleteSubTask(bigProjectId, subProjectId, subTaskId)
       .then(() => {
         alert('サブタスクを削除しました');
-        // 即時UIから除去
-        if (this.currentSubTasksMap[subProjectId]) {
-          this.currentSubTasksMap[subProjectId] = this.currentSubTasksMap[subProjectId].filter(t => t.id !== subTaskId);
-        }
+        // filter処理は不要（Firestore購読でUIが更新される）
         this.ganttTasks = this.ganttTasks.filter(t => t.id !== subTaskId);
         this.subscribeSubTasks(bigProjectId, subProjectId);
         this.updateBigProjectProgress(bigProjectId);
@@ -2972,9 +3095,11 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     // SVG横幅を取得（なければ1200px）
     let svgWidth = 1200;
     if (!isForWidthCalc && this.barChartContainerRef && this.barChartContainerRef.nativeElement) {
-      svgWidth = this.barChartContainerRef.nativeElement.clientWidth || 1200;
+      svgWidth = this.barChartContainerRef.nativeElement.clientWidth;
+      if (!svgWidth || svgWidth < 340) svgWidth = 340;
     } else if (isForWidthCalc) {
       svgWidth = this.getBarChartSvgWidth(true);
+      if (!svgWidth || svgWidth < 340) svgWidth = 340;
     }
     const xStart = 40;
     const xEnd = svgWidth - 40;
@@ -3205,4 +3330,20 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
       });
     });
   }
+
+  // ... 既存のプロパティの下に追加 ...
+  globalEditingSubTask: { bigProjectId: string; subProjectId: string; subTask: any } | null = null;
+
+  // --- ここから追加 ---
+  get editingSubTaskModel() {
+    return this.globalEditingSubTask?.subTask || this.editingSubTask?.subTask;
+  }
+  set editingSubTaskModel(value: any) {
+    if (this.globalEditingSubTask) {
+      this.globalEditingSubTask.subTask = value;
+    } else if (this.editingSubTask) {
+      this.editingSubTask.subTask = value;
+    }
+  }
+  // ... existing code ...
 }

@@ -1,1 +1,44 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* グローバルサブタスク編集モーダルをコンパクトに */
+.global-subtask-modal {
+  width: 260px !important;
+  max-width: 90vw !important;
+  min-width: 120px !important;
+  padding: 0.5em 0.3em !important;
+  border-radius: 8px !important;
+  font-size: 0.92em !important;
+  box-sizing: border-box !important;
+}
+.global-subtask-modal input,
+.global-subtask-modal textarea,
+.global-subtask-modal select,
+.global-subtask-modal button {
+  font-size: 0.92em !important;
+  padding: 0.3em 0.4em !important;
+  margin-bottom: 0.5em !important;
+  width: 100% !important;
+  max-width: 160px !important;
+  box-sizing: border-box !important;
+}
+.global-subtask-modal .form-group {
+  width: 100% !important;
+  max-width: 160px !important;
+  margin-bottom: 0.5em !important;
+}
+.global-subtask-modal .form-actions {
+  display: flex !important;
+  gap: 0.5em !important;
+  justify-content: center !important;
+  width: 100% !important;
+  max-width: 160px !important;
+}
+.global-subtask-modal .close-button {
+  top: 0.3em !important;
+  right: 0.5em !important;
+  font-size: 1em !important;
+}
+.global-subtask-modal h2, .global-subtask-modal h3 {
+  font-size: 1em !important;
+  margin-bottom: 0.5em !important;
+}

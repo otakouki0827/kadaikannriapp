@@ -279,18 +279,27 @@
     margin: 0.75rem 0;
   }
   
-  .tag {
-    background: #e3f2fd;
-    color: #2196F3;
-    padding: 0.35rem 0.85rem;
-    border-radius: 12px;
-    font-size: 0.85rem;
+  .chip, .status-chip, .project-chip, .date-chip, .burnup-chip {
+    display: inline-block;
+    border-radius: 999px;
+    font-size: 0.92em;
     font-weight: 500;
+    padding: 0.18em 0.8em;
+    margin: 0 0.1em;
+    box-shadow: 0 1px 4px rgba(33,150,243,0.08);
+    vertical-align: middle;
+    line-height: 1.5;
+    letter-spacing: 0.01em;
   }
-  
-  .category-tag {
-    background: #2196F3;
-    color: white;
+  .status-chip.not-started, .burnup-chip.not-started { background: #fff0f0; color: #d32f2f; }
+  .status-chip.in-progress, .burnup-chip.in-progress { background: #e8f4fd; color: #0d47a1; }
+  .status-chip.completed, .burnup-chip.completed   { background: #e8f5e9; color: #1b5e20; }
+  .project-chip { background: #e3f2fd; color: #1976d2; }
+  .date-chip    { background: #f5f5f5; color: #666; }
+  .burnup-chip {
+    stroke: #fff;
+    stroke-width: 2px;
+    filter: drop-shadow(0 1px 4px rgba(33,150,243,0.10));
   }
   
   /* プログレスバー */
@@ -832,15 +841,16 @@
   
   /* タスク編集モーダル */
   .modal-overlay {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 10000;
   }
   
   .task-edit-form,
@@ -1540,25 +1550,14 @@
   }
   
   /* ガントチャートのスタイル */
-  .gantt-view, .gantt-container {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    overflow-x: visible;
+  .gantt-container {
+    overflow-x: auto !important;
+    white-space: nowrap;
   }
-  .gantt-body {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    overflow-x: visible;
+  .gantt-view, .gantt-body, .gantt-timeline {
+    overflow-x: visible !important;
+    white-space: normal;
   }
-  .gantt-timeline {
-    width: 100%;
-    max-width: none;
-    min-width: 0;
-    overflow-x: visible;
-  }
-  
   .gantt-header {
     border-bottom: 2px solid #e0e0e0;
     margin-bottom: 1rem;
@@ -1646,12 +1645,12 @@
   }
   
   .gantt-task-bar {
-    position: absolute;
-    height: 24px;
-    top: 13px;
+    position: relative;
     border-radius: 12px;
-    transition: all 0.2s ease;
-    opacity: 0.8;
+  }
+  
+  .gantt-task-chip {
+    display: none;
   }
   
   .gantt-task-bar:hover {
@@ -1663,8 +1662,8 @@
   .task-bar-tooltip {
     position: absolute;
     top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
+    left: 0;
+    transform: translateX(0);
     background: rgba(0, 0, 0, 0.8);
     color: white;
     padding: 4px 8px;
@@ -1674,6 +1673,7 @@
     opacity: 0;
     visibility: hidden;
     transition: all 0.2s ease;
+    z-index: 10;
   }
   
   .task-bar-tooltip::after {
@@ -1888,6 +1888,7 @@
   .form-group .material-icons {
     font-size: 1.2em;
     color: #2196F3;
+    font-variation-settings: 'FILL' 1;
   }
   
   .form-divider {
@@ -2113,59 +2114,49 @@
     font-size: 1em;
   }
 
-  /* サブタスク編集モーダルを大きくする */
-  .task-edit-form.edit-form-common,
-  .sub-task-edit-form.edit-form-common {
-    max-width: 640px !important;
-    min-width: 320px !important;
-    width: 99vw !important;
-    padding: 2em 1.5em !important;
-    border-radius: 12px !important;
-    font-size: 1.15em !important;
+  /* サブタスク編集モーダルをコンパクトに */
+  .task-edit-form.edit-form-common {
+    max-width: 360px !important;
+    min-width: 220px !important;
+    width: 88vw !important;
+    padding: 0.5em 0.3em !important;
+    border-radius: 8px !important;
+    font-size: 0.92em !important;
   }
 
-  .sub-task-edit-form.edit-form-common .datetime-range {
-    display: block !important;
-    width: 50%;
-    max-width: 1000px;
-    min-width: 300px;
-    margin: 0.5em auto;
-  }
-
-  .sub-task-edit-form.edit-form-common .datetime-input {
-    display: block !important;
+  .task-edit-form.edit-form-common input,
+  .task-edit-form.edit-form-common textarea,
+  .task-edit-form.edit-form-common select,
+  .task-edit-form.edit-form-common button {
+    font-size: 0.92em !important;
+    padding: 0.3em 0.4em !important;
+    margin-bottom: 0.5em !important;
     width: 100%;
-    margin-bottom: 1em;
-  }
-
-  .sub-task-edit-form.edit-form-common label,
-  .sub-task-edit-form.edit-form-common .form-group label {
-    display: block;
-    text-align: left;
-    margin-left: 0;
-    margin-right: 0;
-    width: 90%;
-    max-width: 1000px;
-    min-width: 300px;
-    margin: 0.5em auto 0.2em auto;
-    font-weight: 500;
-  }
-
-  .sub-task-edit-form.edit-form-common input,
-  .sub-task-edit-form.edit-form-common select,
-  .sub-task-edit-form.edit-form-common textarea {
-    width: 90%;
-    max-width: 1000px;
-    min-width: 300px;
-    margin: 0.2em auto 1em auto;
-    display: block;
+    max-width: 160px;
     box-sizing: border-box;
   }
 
-  .sub-task-edit-form.edit-form-common input[type="date"] {
-    width: 90% !important;
-    max-width: 1000px !important;
-    min-width: 300px !important;
-    margin: 0.2em auto 1em auto !important;
-    box-sizing: border-box !important;
+  .task-edit-form.edit-form-common .form-group {
+    width: 100%;
+    max-width: 160px;
+    margin-bottom: 0.5em !important;
+  }
+
+  .task-edit-form.edit-form-common .form-actions {
+    display: flex;
+    gap: 0.5em;
+    justify-content: center;
+    width: 100%;
+    max-width: 160px;
+  }
+
+  .task-edit-form.edit-form-common .close-button {
+    top: 0.3em;
+    right: 0.5em;
+    font-size: 1em;
+  }
+
+  .task-edit-form.edit-form-common h2, .task-edit-form.edit-form-common h3 {
+    font-size: 1em;
+    margin-bottom: 0.5em;
   }

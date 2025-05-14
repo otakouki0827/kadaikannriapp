@@ -173,11 +173,7 @@
           <div class="project-form edit-form-common" *ngIf="showProjectForm">
             <div class="form-group">
               <label>プロジェクト名 <span class="required">*</span></label>
-              <input type="text" id="newProject-name" name="name" [(ngModel)]="newProject.name" placeholder="プロジェクト名を入力">
-            </div>
-            <div class="form-group">
-              <label>説明</label>
-              <textarea id="newProject-description" name="description" [(ngModel)]="newProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+              <input type="text" id="newProject-name" name="name" [(ngModel)]="newProject.name" placeholder="プロジェクト名を入力" maxlength="15">
             </div>
             <div class="form-group">
               <label>期間 <span class="required">*</span></label>
@@ -198,11 +194,11 @@
             </div>
             <div class="form-group">
               <label>カテゴリ</label>
-              <input type="text" id="newProject-category" name="category" [(ngModel)]="newProject.category" placeholder="カテゴリを入力">
+              <input type="text" id="newProject-category" name="category" [(ngModel)]="newProject.category" placeholder="カテゴリを入力" maxlength="10">
             </div>
             <div class="form-group">
               <label>担当者</label>
-              <input type="text" id="newProject-assignee" name="assignee" [(ngModel)]="newProject.assignee" placeholder="担当者を入力">
+              <input type="text" id="newProject-assignee" name="assignee" [(ngModel)]="newProject.assignee" placeholder="担当者を入力" maxlength="10">
             </div>
             <div class="form-actions">
               <button class="cancel-button" (click)="resetProjectForm()">キャンセル</button>
@@ -213,12 +209,9 @@
           <div class="project-form edit-form-common" *ngIf="editingProject">
             <div class="form-group">
               <label>プロジェクト名 <span class="required">*</span></label>
-              <input type="text" id="editingProject-name" name="name" [(ngModel)]="editingProject.name" placeholder="プロジェクト名を入力">
+              <input type="text" id="editingProject-name" name="name" [(ngModel)]="editingProject.name" placeholder="プロジェクト名を入力" maxlength="15">
             </div>
-            <div class="form-group">
-              <label>説明</label>
-              <textarea id="editingProject-description" name="description" [(ngModel)]="editingProject.description" placeholder="プロジェクトの説明を入力"></textarea>
-            </div>
+
             <div class="form-group">
               <label>期間 <span class="required">*</span></label>
               <div class="datetime-range">
@@ -238,11 +231,11 @@
             </div>
             <div class="form-group">
               <label>カテゴリ</label>
-              <input type="text" id="editingProject-category" name="category" [(ngModel)]="editingProject.category" placeholder="カテゴリを入力">
+              <input type="text" id="editingProject-category" name="category" [(ngModel)]="editingProject.category" placeholder="カテゴリを入力" maxlength="10">
             </div>
             <div class="form-group">
               <label>担当者</label>
-              <input type="text" id="editingProject-assignee" name="assignee" [(ngModel)]="editingProject.assignee" placeholder="担当者を入力">
+              <input type="text" id="editingProject-assignee" name="assignee" [(ngModel)]="editingProject.assignee" placeholder="担当者を入力" maxlength="10">
             </div>
             <div class="form-actions">
               <button class="cancel-button" (click)="cancelProjectEdit()">キャンセル</button>
@@ -298,15 +291,11 @@
                 <div class="task-form edit-form-common" *ngIf="project.id && projectTaskForms[project.id]">
                   <div class="form-group">
                     <label>タスク名 <span class="required">*</span></label>
-                    <input type="text" [(ngModel)]="newTasks[project.id].title" placeholder="タスク名を入力">
-                  </div>
-                  <div class="form-group">
-                    <label>説明</label>
-                    <textarea [(ngModel)]="newTasks[project.id].description" placeholder="説明を入力"></textarea>
+                    <input type="text" [(ngModel)]="newTasks[project.id].title" placeholder="タスク名を入力" maxlength="15">
                   </div>
                   <div class="form-group">
                     <label>担当者</label>
-                    <input type="text" [(ngModel)]="newTasks[project.id].assignee" placeholder="担当者を入力">
+                    <input type="text" [(ngModel)]="newTasks[project.id].assignee" placeholder="担当者を入力" maxlength="10">
                   </div>
                   <div class="form-group">
                     <label>ステータス</label>
@@ -423,15 +412,11 @@
                       <div *ngIf="editingSubProjectTask && editingSubProjectTask.task.id === task.id" class="task-edit-form-inline edit-form-common">
                         <div class="form-group">
                           <label for="edit-task-title">タスク名 <span class="required">*</span></label>
-                          <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingSubProjectTask.task.title" required>
-                        </div>
-                        <div class="form-group">
-                          <label for="edit-task-description">説明</label>
-                          <textarea id="edit-task-description" name="description" [(ngModel)]="editingSubProjectTask.task.description"></textarea>
+                          <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingSubProjectTask.task.title" required maxlength="15">
                         </div>
                         <div class="form-group">
                           <label for="edit-task-assignee">担当者</label>
-                          <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingSubProjectTask.task.assignee">
+                          <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingSubProjectTask.task.assignee" maxlength="10">
                         </div>
                         <div class="form-group">
                           <label>ステータス</label>
@@ -471,7 +456,7 @@
 
       <!-- ガントチャート表示 -->
       <div *ngIf="currentView === 'gantt'" class="gantt-view">
-        <div class="gantt-container">
+        <div class="gantt-container" style="overflow-x: auto;">
           <div class="gantt-selector" style="margin-bottom: 1rem;">
             <label>表示対象:</label>
             <select [(ngModel)]="selectedGanttTargetId" (change)="onGanttTargetChange()">
@@ -488,18 +473,16 @@
             </select>
           </div>
           <h2>{{ selectedGanttTargetName }}</h2>
-          
           <div class="gantt-header">
             <div class="gantt-header-row">
               <div class="gantt-task-info">タスク名称</div>
-              <div class="gantt-timeline">
+              <div class="gantt-timeline" [style.minWidth]="(ganttMonths.length * 180) + 'px'">
                 <div class="gantt-months">
                   <div class="gantt-month" *ngFor="let month of ganttMonths">{{ month }}</div>
                 </div>
               </div>
             </div>
           </div>
-
           <div class="gantt-body">
             <div class="gantt-task-row" *ngFor="let task of ganttTasks">
               <div class="gantt-task-info">
@@ -516,12 +499,12 @@
                   </span>
                 </div>
               </div>
-              <div class="gantt-timeline">
+              <div class="gantt-timeline" [style.minWidth]="(ganttMonths.length * 180) + 'px'">
                 <div class="gantt-task-bar" 
                      [style.left]="calculateTaskPosition(task).left"
                      [style.width]="calculateTaskPosition(task).width"
-                     [style.background-color]="calculateTaskPosition(task).backgroundColor"
-                     [title]="task.startDate + ' ～ ' + task.endDate">
+                     [style.background-color]="calculateTaskPosition(task).backgroundColor">
+                  <div class="gantt-task-chip"></div>
                   <div class="task-bar-tooltip">
                     {{ task.startDate }} ～ {{ task.endDate }}
                   </div>
@@ -529,22 +512,17 @@
               </div>
             </div>
           </div>
-
           <!-- タスク編集モーダルはmainタグの直前に1か所だけ配置 -->
           <div class="modal-overlay" *ngIf="editingTask">
             <div class="task-edit-form edit-form-common">
               <h3>タスクの編集</h3>
               <div class="form-group">
                 <label for="edit-task-title">タスク名 <span class="required">*</span></label>
-                <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingTask.task.title" required>
-              </div>
-              <div class="form-group">
-                <label for="edit-task-description">説明</label>
-                <textarea id="edit-task-description" name="description" [(ngModel)]="editingTask.task.description"></textarea>
+                <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingTask.task.title" required maxlength="15">
               </div>
               <div class="form-group">
                 <label for="edit-task-assignee">担当者</label>
-                <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingTask.task.assignee">
+                <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingTask.task.assignee" maxlength="10">
               </div>
               <div class="form-group">
                 <label>ステータス</label>
@@ -812,7 +790,7 @@
               <input type="text" 
                      [(ngModel)]="searchQuery" 
                      (ngModelChange)="onSearchQueryChange()"
-                     placeholder="プロジェクト名、タスク名、説明、担当者名などで検索..."
+                     placeholder="プロジェクト名、タスク名、担当者名などで検索..."
                      class="search-input">
               <div class="search-filters">
                 <label>
@@ -853,12 +831,12 @@
                   {{ getStatusLabel(result.status) }}
                 </span>
               </div>
-              <div class="result-actions">
-                <button class="view-button" (click)="navigateToResult(result)">
-                  <i>👁️</i> 表示
-                </button>
+              <div class="result-actions" style="display: flex; align-items: center; gap: 0.5em;">
                 <button class="edit-button" (click)="editSearchResult(result)">
-                  <i>✏️</i> 編集
+                  <i>✏️</i>
+                </button>
+                <button class="delete-button" (click)="deleteSearchResult(result)">
+                  <i>🗑️</i>
                 </button>
               </div>
             </div>
@@ -882,11 +860,7 @@
         <div class="big-project-form edit-form-common" *ngIf="showBigProjectCreateForm">
           <div class="form-group">
             <label>プロジェクト名 <span class="required">*</span></label>
-            <input type="text" [(ngModel)]="newBigProject.name" placeholder="プロジェクト名を入力">
-          </div>
-          <div class="form-group">
-            <label>説明</label>
-            <textarea [(ngModel)]="newBigProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+            <input type="text" [(ngModel)]="newBigProject.name" placeholder="プロジェクト名を入力" maxlength="15">
           </div>
           <div class="form-group">
             <label>期間</label>
@@ -911,11 +885,11 @@
           </div>
           <div class="form-group">
             <label>カテゴリー</label>
-            <input type="text" [(ngModel)]="newBigProject.category" placeholder="カテゴリーを入力">
+            <input type="text" [(ngModel)]="newBigProject.category" placeholder="カテゴリーを入力" maxlength="10">
           </div>
           <div class="form-group">
             <label>担当者</label>
-            <input type="text" [(ngModel)]="newBigProject.assignee" placeholder="担当者を入力">
+            <input type="text" [(ngModel)]="newBigProject.assignee" placeholder="担当者を入力" maxlength="10">
           </div>
           <div class="form-actions">
             <button class="cancel-button" (click)="resetBigProjectForm()">キャンセル</button>
@@ -923,49 +897,7 @@
           </div>
         </div>
 
-        <div class="big-project-form edit-form-common" *ngIf="editingBigProject">
-          <div class="form-group">
-            <label>プロジェクト名 <span class="required">*</span></label>
-            <input type="text" [(ngModel)]="editingBigProject.name" placeholder="ビッグプロジェクト名を入力">
-          </div>
-          <div class="form-group">
-            <label>説明</label>
-            <textarea [(ngModel)]="editingBigProject.description" placeholder="ビッグプロジェクトの説明を入力"></textarea>
-          </div>
-          <div class="form-group">
-            <label>期間</label>
-            <div class="datetime-range">
-              <div class="datetime-input">
-                <label class="sublabel">開始日 <span class="required">*</span></label>
-                <input type="date" [(ngModel)]="editingBigProject.startDate">
-              </div>
-              <div class="datetime-input">
-                <label class="sublabel">終了日 <span class="required">*</span></label>
-                <input type="date" [(ngModel)]="editingBigProject.endDate">
-              </div>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>ステータス</label>
-            <select [(ngModel)]="editingBigProject.status">
-              <option value="not-started">未着手</option>
-              <option value="active">進行中</option>
-              <option value="completed">完了</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>カテゴリー</label>
-            <input type="text" [(ngModel)]="editingBigProject.category" placeholder="カテゴリーを入力">
-          </div>
-          <div class="form-group">
-            <label>担当者</label>
-            <input type="text" [(ngModel)]="editingBigProject.assignee" placeholder="担当者を入力">
-          </div>
-          <div class="form-actions">
-            <button class="cancel-button" (click)="cancelBigProjectEdit()">キャンセル</button>
-            <button class="save-button" (click)="saveBigProjectEdit()">保存</button>
-          </div>
-        </div>
+        
 
         <div class="big-project-list">
           <div class="big-project-item" *ngFor="let bigProject of bigProjects">
@@ -1014,6 +946,9 @@
                       <span class="sub-project-period" *ngIf="subProject.startDate && subProject.endDate" style="display: block; font-weight: normal; font-size: 0.95em; color: #666;">
                         （{{ subProject.startDate }} ～ {{ subProject.endDate }}）
                       </span>
+                      <span *ngIf="subProject.assignee" class="sub-project-assignee" style="display: block; font-size: 0.95em; color: #1976d2; margin-bottom: 0.1em;">
+                        担当者: {{ subProject.assignee }}
+                      </span>
                       <div class="progress-bar" *ngIf="(currentSubTasksMap[subProject.id]?.length || subProject.tasks?.length)">
                         <div class="progress-fill" [style.width.%]="getSubProjectProgressWithSubTasks(subProject)"></div>
                       </div>
@@ -1035,15 +970,11 @@
                   <div class="sub-task-form edit-form-common" *ngIf="showSubTaskForm[subProject.id]">
                     <div class="form-group">
                       <label>タスク名 <span class="required">*</span></label>
-                      <input type="text" [(ngModel)]="newSubTask[subProject.id].title" required>
-                    </div>
-                    <div class="form-group">
-                      <label>説明</label>
-                      <textarea [(ngModel)]="newSubTask[subProject.id].description"></textarea>
+                      <input type="text" [(ngModel)]="newSubTask[subProject.id].title" required maxlength="15">
                     </div>
                     <div class="form-group">
                       <label>担当者</label>
-                      <input type="text" [(ngModel)]="newSubTask[subProject.id].assignee">
+                      <input type="text" [(ngModel)]="newSubTask[subProject.id].assignee" maxlength="10">
                     </div>
                     <div class="form-group">
                       <label>ステータス</label>
@@ -1100,18 +1031,14 @@
                           </span>
                         </div>
                         <!-- サブタスク編集フォーム -->
-                        <div class="sub-task-edit-form edit-form-common" *ngIf="editingSubTask && editingSubTask.bigProjectId === bigProject.id && editingSubTask.subProjectId === subProject.id && editingSubTask.subTask.id === task.id">
+                        <div class="sub-task-edit-form edit-form-common" *ngIf="currentView === 'bigProject' && editingSubTask && editingSubTask.bigProjectId === bigProject.id && editingSubTask.subProjectId === subProject.id && editingSubTask.subTask.id === task.id">
                           <div class="form-group">
                             <label>タスク名 <span class="required">*</span></label>
-                            <input type="text" [(ngModel)]="editingSubTask.subTask.title" required>
+                            <input type="text" [(ngModel)]="editingSubTask.subTask.title" required maxlength="15">
                           </div>
                           <div class="form-group">
-                            <label>説明</label>
-                            <textarea [(ngModel)]="editingSubTask.subTask.description"></textarea>
-                          </div>
-                          <div class="form-group">
-                            <label>担当者</label>
-                            <input type="text" [(ngModel)]="editingSubTask.subTask.assignee">
+                            <label for="edit-task-assignee">担当者</label>
+                            <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingSubTask.subTask.assignee" maxlength="10">
                           </div>
                           <div class="form-group">
                             <label>ステータス</label>
@@ -1122,26 +1049,22 @@
                             </select>
                           </div>
                           <div class="form-group" *ngIf="editingSubTask.subTask.status === 'completed'">
-                            <label>完了日</label>
-                            <input type="date" [(ngModel)]="editingSubTask.subTask.completedDate" [max]="editingSubTask.subTask.endDate || ''">
+                            <label for="edit-task-completedDate">完了日</label>
+                            <input id="edit-task-completedDate" name="completedDate" type="date" [(ngModel)]="editingSubTask.subTask.completedDate" [max]="editingSubTask.subTask.endDate || ''">
                           </div>
                           <div class="datetime-range">
                             <div class="datetime-input">
-                              <label>開始日時 <span class="required">*</span></label>
-                              <div class="inputs-wrapper">
-                                <input type="date" [(ngModel)]="editingSubTask.subTask.startDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
-                              </div>
+                              <label for="edit-task-startDate">開始日時 <span class="required">*</span></label>
+                              <input id="edit-task-startDate" name="startDate" type="date" [(ngModel)]="editingSubTask.subTask.startDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
                             </div>
                             <div class="datetime-input">
-                              <label>終了日時 <span class="required">*</span></label>
-                              <div class="inputs-wrapper">
-                                <input type="date" [(ngModel)]="editingSubTask.subTask.endDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
-                              </div>
+                              <label for="edit-task-endDate">終了日時 <span class="required">*</span></label>
+                              <input id="edit-task-endDate" name="endDate" type="date" [(ngModel)]="editingSubTask.subTask.endDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
                             </div>
                           </div>
                           <div class="form-actions">
-                            <button class="cancel-button" (click)="cancelSubTaskEdit()">キャンセル</button>
-                            <button class="save-button" (click)="saveSubTaskEdit()">保存</button>
+                            <button class="cancel-button" (click)="cancelTaskEdit()">キャンセル</button>
+                            <button class="save-button" (click)="saveTaskEdit()">保存</button>
                           </div>
                         </div>
                         <!-- サブタスク用コメント欄（編集フォームの前に配置） -->
@@ -1165,15 +1088,11 @@
     <h3>タスクの編集</h3>
     <div class="form-group">
       <label for="edit-task-title">タスク名 <span class="required">*</span></label>
-      <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingTask.task.title" required>
-    </div>
-    <div class="form-group">
-      <label for="edit-task-description">説明</label>
-      <textarea id="edit-task-description" name="description" [(ngModel)]="editingTask.task.description"></textarea>
+      <input id="edit-task-title" name="title" type="text" [(ngModel)]="editingTask.task.title" required maxlength="15">
     </div>
     <div class="form-group">
       <label for="edit-task-assignee">担当者</label>
-      <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingTask.task.assignee">
+      <input id="edit-task-assignee" name="assignee" type="text" [(ngModel)]="editingTask.task.assignee" maxlength="10">
     </div>
     <div class="form-group">
       <label>ステータス</label>
@@ -2016,11 +1935,7 @@ svg text {
     <button class="close-button" type="button" (click)="resetProjectForm()">×</button>
     <div class="form-group">
       <label>プロジェクト名 <span class="required">*</span></label>
-      <input type="text" id="newProject-name" name="name" [(ngModel)]="newProject.name" placeholder="プロジェクト名を入力">
-    </div>
-    <div class="form-group">
-      <label>説明</label>
-      <textarea id="newProject-description" name="description" [(ngModel)]="newProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+      <input type="text" id="newProject-name" name="name" [(ngModel)]="newProject.name" placeholder="プロジェクト名を入力" maxlength="15">
     </div>
     <div class="form-group">
       <label>期間 <span class="required">*</span></label>
@@ -2041,11 +1956,11 @@ svg text {
     </div>
     <div class="form-group">
       <label>カテゴリ</label>
-      <input type="text" id="newProject-category" name="category" [(ngModel)]="newProject.category" placeholder="カテゴリを入力">
+      <input type="text" id="newProject-category" name="category" [(ngModel)]="newProject.category" placeholder="カテゴリを入力" maxlength="10">
     </div>
     <div class="form-group">
       <label>担当者</label>
-      <input type="text" id="newProject-assignee" name="assignee" [(ngModel)]="newProject.assignee" placeholder="担当者を入力">
+      <input type="text" id="newProject-assignee" name="assignee" [(ngModel)]="newProject.assignee" placeholder="担当者を入力" maxlength="10">
     </div>
     <div class="form-actions">
       <button class="cancel-button" (click)="resetProjectForm()">キャンセル</button>
@@ -2060,11 +1975,7 @@ svg text {
     <button class="close-button" type="button" (click)="cancelProjectEdit()">×</button>
     <div class="form-group">
       <label>プロジェクト名 <span class="required">*</span></label>
-      <input type="text" id="editingProject-name" name="name" [(ngModel)]="editingProject.name" placeholder="プロジェクト名を入力">
-    </div>
-    <div class="form-group">
-      <label>説明</label>
-      <textarea id="editingProject-description" name="description" [(ngModel)]="editingProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+      <input type="text" id="editingProject-name" name="name" [(ngModel)]="editingProject.name" placeholder="プロジェクト名を入力" maxlength="15">
     </div>
     <div class="form-group">
       <label>期間 <span class="required">*</span></label>
@@ -2085,11 +1996,11 @@ svg text {
     </div>
     <div class="form-group">
       <label>カテゴリ</label>
-      <input type="text" id="editingProject-category" name="category" [(ngModel)]="editingProject.category" placeholder="カテゴリを入力">
+      <input type="text" id="editingProject-category" name="category" [(ngModel)]="editingProject.category" placeholder="カテゴリを入力" maxlength="10">
     </div>
     <div class="form-group">
       <label>担当者</label>
-      <input type="text" id="editingProject-assignee" name="assignee" [(ngModel)]="editingProject.assignee" placeholder="担当者を入力">
+      <input type="text" id="editingProject-assignee" name="assignee" [(ngModel)]="editingProject.assignee" placeholder="担当者を入力" maxlength="10">
     </div>
     <div class="form-actions">
       <button class="cancel-button" (click)="cancelProjectEdit()">キャンセル</button>
@@ -2105,15 +2016,11 @@ svg text {
       <button class="close-button" type="button" (click)="resetTaskForm(project.id)">×</button>
       <div class="form-group">
         <label>タスク名 <span class="required">*</span></label>
-        <input type="text" [(ngModel)]="newTasks[project.id].title" placeholder="タスク名を入力">
-      </div>
-      <div class="form-group">
-        <label>説明</label>
-        <textarea [(ngModel)]="newTasks[project.id].description" placeholder="説明を入力"></textarea>
+        <input type="text" [(ngModel)]="newTasks[project.id].title" placeholder="タスク名を入力" maxlength="15">
       </div>
       <div class="form-group">
         <label>担当者</label>
-        <input type="text" [(ngModel)]="newTasks[project.id].assignee" placeholder="担当者を入力">
+        <input type="text" [(ngModel)]="newTasks[project.id].assignee" placeholder="担当者を入力" maxlength="10">
       </div>
       <div class="form-group">
         <label>ステータス</label>
@@ -2156,11 +2063,7 @@ svg text {
       <button class="close-button" type="button" (click)="resetSubProjectForm(bigProject.id)">×</button>
       <div class="form-group">
         <label>サブプロジェクト名 <span class="required">*</span></label>
-        <input type="text" [(ngModel)]="newSubProject[bigProject.id].name" required>
-      </div>
-      <div class="form-group">
-        <label>説明</label>
-        <textarea [(ngModel)]="newSubProject[bigProject.id].description"></textarea>
+        <input type="text" [(ngModel)]="newSubProject[bigProject.id].name" required maxlength="15">
       </div>
       <div class="form-group">
         <label>期間</label>
@@ -2177,7 +2080,7 @@ svg text {
       </div>
       <div class="form-group">
         <label>担当者</label>
-        <input type="text" [(ngModel)]="newSubProject[bigProject.id].assignee">
+        <input type="text" [(ngModel)]="newSubProject[bigProject.id].assignee" maxlength="10">
       </div>
       <div class="form-actions">
         <button class="save-button" (click)="createSubProject(bigProject.id)">作成</button>
@@ -2194,15 +2097,11 @@ svg text {
       <button class="close-button" type="button" (click)="resetSubTaskForm(subProject.id)">×</button>
       <div class="form-group">
         <label>タスク名 <span class="required">*</span></label>
-        <input type="text" [(ngModel)]="newSubTask[subProject.id].title" required>
-      </div>
-      <div class="form-group">
-        <label>説明</label>
-        <textarea [(ngModel)]="newSubTask[subProject.id].description"></textarea>
+        <input type="text" [(ngModel)]="newSubTask[subProject.id].title" required maxlength="15">
       </div>
       <div class="form-group">
         <label>担当者</label>
-        <input type="text" [(ngModel)]="newSubTask[subProject.id].assignee">
+        <input type="text" [(ngModel)]="newSubTask[subProject.id].assignee" maxlength="10">
       </div>
       <div class="form-group">
         <label>ステータス</label>
@@ -2236,11 +2135,7 @@ svg text {
     <button class="close-button" type="button" (click)="resetBigProjectForm()">×</button>
     <div class="form-group">
       <label>プロジェクト名 <span class="required">*</span></label>
-      <input type="text" [(ngModel)]="newBigProject.name" placeholder="プロジェクト名を入力">
-    </div>
-    <div class="form-group">
-      <label>説明</label>
-      <textarea [(ngModel)]="newBigProject.description" placeholder="プロジェクトの説明を入力"></textarea>
+      <input type="text" [(ngModel)]="newBigProject.name" placeholder="プロジェクト名を入力" maxlength="15">
     </div>
     <div class="form-group">
       <label>期間</label>
@@ -2265,11 +2160,11 @@ svg text {
     </div>
     <div class="form-group">
       <label>カテゴリー</label>
-      <input type="text" [(ngModel)]="newBigProject.category" placeholder="カテゴリーを入力">
+      <input type="text" [(ngModel)]="newBigProject.category" placeholder="カテゴリーを入力" maxlength="10">
     </div>
     <div class="form-group">
       <label>担当者</label>
-      <input type="text" [(ngModel)]="newBigProject.assignee" placeholder="担当者を入力">
+      <input type="text" [(ngModel)]="newBigProject.assignee" placeholder="担当者を入力" maxlength="10">
     </div>
     <div class="form-actions">
       <button class="cancel-button" (click)="resetBigProjectForm()">キャンセル</button>
@@ -2284,11 +2179,7 @@ svg text {
     <button class="close-button" type="button" (click)="cancelBigProjectEdit()">×</button>
     <div class="form-group">
       <label>プロジェクト名 <span class="required">*</span></label>
-      <input type="text" [(ngModel)]="editingBigProject.name" placeholder="ビッグプロジェクト名を入力">
-    </div>
-    <div class="form-group">
-      <label>説明</label>
-      <textarea [(ngModel)]="editingBigProject.description" placeholder="ビッグプロジェクトの説明を入力"></textarea>
+      <input type="text" [(ngModel)]="editingBigProject.name" placeholder="ビッグプロジェクト名を入力" maxlength="15">
     </div>
     <div class="form-group">
       <label>期間</label>
@@ -2313,11 +2204,11 @@ svg text {
     </div>
     <div class="form-group">
       <label>カテゴリー</label>
-      <input type="text" [(ngModel)]="editingBigProject.category" placeholder="カテゴリーを入力">
+      <input type="text" [(ngModel)]="editingBigProject.category" placeholder="カテゴリーを入力" maxlength="10">
     </div>
     <div class="form-group">
       <label>担当者</label>
-      <input type="text" [(ngModel)]="editingBigProject.assignee" placeholder="担当者を入力">
+      <input type="text" [(ngModel)]="editingBigProject.assignee" placeholder="担当者を入力" maxlength="10">
     </div>
     <div class="form-actions">
       <button class="cancel-button" (click)="cancelBigProjectEdit()">キャンセル</button>
@@ -2334,11 +2225,7 @@ svg text {
         <button class="close-button" type="button" (click)="cancelSubProjectEdit()">×</button>
         <div class="form-group">
           <label>サブプロジェクト名 <span class="required">*</span></label>
-          <input type="text" [(ngModel)]="editingSubProject.subProject.name" required>
-        </div>
-        <div class="form-group">
-          <label>説明</label>
-          <textarea [(ngModel)]="editingSubProject.subProject.description"></textarea>
+          <input type="text" [(ngModel)]="editingSubProject.subProject.name" required maxlength="15">
         </div>
         <div class="form-group">
           <label>開始日 <span class="required">*</span></label>
@@ -2350,7 +2237,7 @@ svg text {
         </div>
         <div class="form-group">
           <label>担当者</label>
-          <input type="text" [(ngModel)]="editingSubProject.subProject.assignee">
+          <input type="text" [(ngModel)]="editingSubProject.subProject.assignee" maxlength="10">
         </div>
         <div class="form-actions">
           <button class="save-button" (click)="saveSubProjectEdit()">保存</button>
@@ -2361,58 +2248,48 @@ svg text {
   </div>
 </div>
 
-<!-- Subtask edit modal -->
-<div *ngFor="let bigProject of bigProjects">
-  <div *ngFor="let subProject of bigProject.subProjects">
-    <div *ngFor="let task of subProject.tasks">
-      <div class="modal-overlay" *ngIf="editingSubTask && editingSubTask.bigProjectId === bigProject.id && editingSubTask.subProjectId === subProject.id && editingSubTask.subTask && editingSubTask.subTask.id === task.id">
-        <div class="task-edit-form edit-form-common">
-          <button class="close-button" type="button" (click)="cancelSubTaskEdit()">×</button>
-          <h3>タスクの編集</h3>
-          <div class="form-group">
-            <label>タスク名 <span class="required">*</span></label>
-            <input type="text" [(ngModel)]="editingSubTask.subTask.title" required>
-          </div>
-          <div class="form-group">
-            <label>説明</label>
-            <textarea [(ngModel)]="editingSubTask.subTask.description"></textarea>
-          </div>
-          <div class="form-group">
-            <label>担当者</label>
-            <input type="text" [(ngModel)]="editingSubTask.subTask.assignee">
-          </div>
-          <div class="form-group">
-            <label>ステータス</label>
-            <select [(ngModel)]="editingSubTask.subTask.status">
-              <option value="not-started">未着手</option>
-              <option value="in-progress">進行中</option>
-              <option value="completed">完了</option>
-            </select>
-          </div>
-          <div class="form-group" *ngIf="editingSubTask.subTask.status === 'completed'">
-            <label>完了日</label>
-            <input type="date" [(ngModel)]="editingSubTask.subTask.completedDate" [max]="editingSubTask.subTask.endDate || ''">
-          </div>
-          <div class="datetime-range">
-            <div class="datetime-input">
-              <label>開始日時 <span class="required">*</span></label>
-              <div class="inputs-wrapper">
-                <input type="date" [(ngModel)]="editingSubTask.subTask.startDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
-              </div>
-            </div>
-            <div class="datetime-input">
-              <label>終了日時 <span class="required">*</span></label>
-              <div class="inputs-wrapper">
-                <input type="date" [(ngModel)]="editingSubTask.subTask.endDate" [min]="getSubProjectStartDate(editingSubTask.subProjectId)" [max]="getSubProjectEndDate(editingSubTask.subProjectId)">
-              </div>
-            </div>
-          </div>
-          <div class="form-actions">
-            <button class="cancel-button" (click)="cancelSubTaskEdit()">キャンセル</button>
-            <button class="save-button" (click)="saveSubTaskEdit()">保存</button>
-          </div>
+<!-- Subtask edit modal (グローバルに1か所だけ配置) -->
+<div class="modal-overlay" *ngIf="globalEditingSubTask || editingSubTask as editObj">
+  <div class="task-edit-form edit-form-common">
+    <button class="close-button" type="button" (click)="cancelSubTaskEdit()">×</button>
+    <h3>サブタスクの編集</h3>
+    <div class="form-group">
+      <label>タスク名 <span class="required">*</span></label>
+      <input type="text" [(ngModel)]="editObj.subTask.title" required maxlength="15">
+    </div>
+    <div class="form-group">
+      <label>担当者</label>
+      <input type="text" [(ngModel)]="editObj.subTask.assignee" maxlength="10">
+    </div>
+    <div class="form-group">
+      <label>ステータス</label>
+      <select [(ngModel)]="editObj.subTask.status">
+        <option value="not-started">未着手</option>
+        <option value="in-progress">進行中</option>
+        <option value="completed">完了</option>
+      </select>
+    </div>
+    <div class="form-group" *ngIf="editObj.subTask.status === 'completed'">
+      <label>完了日</label>
+      <input type="date" [(ngModel)]="editObj.subTask.completedDate" [max]="editObj.subTask.endDate || ''">
+    </div>
+    <div class="datetime-range">
+      <div class="datetime-input">
+        <label>開始日時 <span class="required">*</span></label>
+        <div class="inputs-wrapper">
+          <input type="date" [(ngModel)]="editObj.subTask.startDate" [min]="getSubProjectStartDate(editObj.subProjectId)" [max]="getSubProjectEndDate(editObj.subProjectId)">
         </div>
       </div>
+      <div class="datetime-input">
+        <label>終了日時 <span class="required">*</span></label>
+        <div class="inputs-wrapper">
+          <input type="date" [(ngModel)]="editObj.subTask.endDate" [min]="getSubProjectStartDate(editObj.subProjectId)" [max]="getSubProjectEndDate(editObj.subProjectId)">
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="cancel-button" (click)="cancelSubTaskEdit()">キャンセル</button>
+      <button class="save-button" (click)="saveSubTaskEdit()">保存</button>
     </div>
   </div>
 </div>
