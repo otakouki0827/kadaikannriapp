@@ -366,10 +366,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         this.bigProjects = bigProjects;
         bigProjects.forEach(bp => {
           this.projectService.getSubProjects(bp.id).subscribe(subProjects => {
-            // bigProjectIdを必ずセット
+            // bigProjectIdとbigProjectNameを必ずセット
             const subProjectsWithParent = subProjects.map(sp => ({
               ...sp,
-              bigProjectId: bp.id, // ←ここでセット
+              bigProjectId: bp.id,
               bigProjectName: bp.name
             }));
             this.currentSubProjectsMap[bp.id] = subProjectsWithParent;
@@ -1240,16 +1240,22 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     console.log('[selectBigProject] getSubProjects呼び出し直前', bigProject.id);
     this.subProjects$ = this.projectService.getSubProjects(bigProject.id);
     this.subProjectsSubscription = this.subProjects$.subscribe(subProjects => {
-      this.currentSubProjectsMap[bigProject.id] = subProjects;
+      // bigProjectIdとbigProjectNameを必ずセット
+      const subProjectsWithParent = subProjects.map(sp => ({
+        ...sp,
+        bigProjectId: bigProject.id,
+        bigProjectName: bigProject.name
+      }));
+      this.currentSubProjectsMap[bigProject.id] = subProjectsWithParent;
       // 全ビッグプロジェクトのサブプロジェクトを集約
       const allSubProjects: any[] = [];
       Object.values(this.currentSubProjectsMap).forEach(list => allSubProjects.push(...list));
       this.currentSubProjects = allSubProjects;
       // サブプロジェクトごとにサブタスク購読
-      subProjects.forEach((sp: any) => {
+      subProjectsWithParent.forEach((sp: any) => {
         this.subscribeSubTasks(bigProject.id, sp.id);
       });
-      console.log('[subProjects取得]', subProjects);
+      console.log('[subProjects取得]', subProjectsWithParent);
       this.cdr.markForCheck();
     });
     this.cdr.markForCheck();
@@ -2689,6 +2695,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     const task = this.newSubTask[subProjectId];
     // デバッグ用ログ
     console.log('createSubTask', { bigProjectId, subProjectId, task });
+    if (!bigProjectId || !subProjectId) {
+      alert('ビッグプロジェクトIDまたはサブプロジェクトIDが不正です');
+      return;
+    }
     if (!task.title) {
       alert('タスク名は必須です');
       return;
